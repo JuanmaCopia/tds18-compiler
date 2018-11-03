@@ -20,13 +20,25 @@
 #define OR '|'
 #define NOT '!'
 
+#define LABEL 'l'
 #define TMP1 't' + '1'
 #define TMP2 't' + '2'
 #define CALL 'c'
 #define END_FUN 'e' + 'f'
 
+#define JMP 'j'
+#define JZ 'j' + 'z' 
+#define JNZ 'j' + 'n' + 'z'
+#define JE  'j' + 'e'
+#define JNE 'j' + 'n' + 'e'
+#define JG  'j' + 'g'
+#define JL  'j' + 'l'
+#define JGE 'j' + 'g' + 'e'
+#define JLE 'j' + 'l' + 'e'
+
 InstructionNode * head, *last;
 int temp_quantity = 0;
+int label_quantity = 0;
 
 char * get_type_node_string(TypeNode tn);
 
@@ -83,6 +95,17 @@ VarNode * create_temporal() {
   return new_node;
 }
 
+VarNode * create_label() {
+  char label_name[128];
+  sprintf(label_name, "l%d\0", label_quantity);
+  char * res = malloc(strlen(label_name));
+  sprintf(res, label_name);
+  VarNode * new_node = create_var_node();
+  new_node -> id = res;
+  label_quantity++;
+  return new_node;
+}
+
 /*
   Creates a new temporal and sets its value and type.
 */
@@ -122,6 +145,17 @@ int get_operation(ASTNode * node) {
   }
 }
 
+int get_jump_instruction_from_operation(int op) {
+  switch(op) {
+    case EQUALS: return JNE;
+    case GREATER_THAN: return JLE;
+    case LESSER_THAN: return JGE;
+    case AND: return JZ;
+    case OR: return JZ;
+    case NOT: return JZ;
+  }
+}
+
 /*
   Recorre el cuerpo de una funcion y crea las instrucciones en codigo iget_temporal_string(i ntermedio
 */
@@ -147,7 +181,48 @@ InstructionNode * create_TEMP_instruction(VarNode * var_data) {
     return create_instructionNode(TMP1, var_data, NULL, NULL);
 }
 
+/*
+  Creates an instruction that represents the creation of a label
+*/
+InstructionNode * create_LABEL_instruction(VarNode * var_data) {
+  return create_instructionNode(LABEL, var_data, NULL, NULL);
+}
+
 InstructionNode * create_statement_instructions(ASTNode * root);
+
+InstructionNode * create_instruction_conditional_jump(int operation, VarNode * jmp_target, VarNode * cond_result) {
+  InstructionNode * condition_inst = create_instructionNode(operation, jmp_target, cond_result, NULL);
+  return condition_inst;
+}
+
+void add_then_instructions(ASTNode * root) {
+  create_statement_instructions(root -> right_child -> left_child);
+}
+
+void add_else_instructions(ASTNode * root) {
+  create_statement_instructions(root -> right_child -> right_child);
+}
+
+InstructionNode * create_instruction_if(ASTNode * root) {
+  InstructionNode * condition_expr = create_statement_instructions(root -> left_child);
+  //Condition_expr_added
+  InstructionNode * condition_jmp = create_instruction_conditional_jump(get_jump_instruction_from_operation(condition_expr -> operation), NULL, condition_expr -> result);
+  InstructionNode * else_label = create_LABEL_instruction(create_label());
+  InstructionNode * end_if_label = create_LABEL_instruction(create_label());
+  condition_jmp -> result = else_label -> result;
+  add_instruction(condition_jmp);
+  //condition_jmp_added
+  add_then_instructions(root);
+  //THEN_instructions_added
+  add_instruction(create_instruction_conditional_jump(JMP, end_if_label -> result, NULL));
+  //added_if_escape
+  add_instruction(else_label);
+  //added_ELSE_label
+  add_else_instructions(root);
+  //ELSE_instructions_added
+  add_instruction(end_if_label);
+  //added end_of_if_label
+}
 
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
   printf("encuentra un operador \n");
@@ -183,7 +258,7 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
   printf("entra a la rec, este nodo es un %s\n", get_type_node_string(root->node_type));
   if (root != NULL) {
     switch (root -> node_type) {
-      case _if: break;
+      case _if: create_instruction_if(root);
       case _if_body: break;
       case _while: break;
       case _arith_op: case _boolean_op:
@@ -234,6 +309,16 @@ char * get_operation_string(InstructionNode * i) {
     case GREATER_THAN: return "GRTR";
     case LESSER_THAN:  return "LSSR";
     case ASSIGN: return "ASGN";
+    case LABEL: return "LABL";
+    case JMP: return "JMP";
+    case JZ: return "JZ";
+    case JNZ: return "JNZ";
+    case JE: return "JE";
+    case JNE: return "JNE";
+    case JG: return "JG";
+    case JL: return "JL";
+    case JGE: return "JGE";
+    case JLE: return "JLE";
   }
 }
 
@@ -264,13 +349,13 @@ char * get_temporal_string(VarNode * temp) {
 */
 void print_instruction(InstructionNode * i) {
   switch (i -> operation) {
-    case TMP1: case CALL: case END_FUN:       // aca se imprimen instrucciones con un solo operador
+    case TMP1: case CALL: case END_FUN: case LABEL: case JMP: case JZ: case JNZ: case JE: case JNE: case JG: case JL: case JGE: case JLE:      // aca se imprimen instrucciones con un solo operador
       printf("%s   %s\n", get_operation_string(i), i -> result -> id);
       break;
     case TMP2: case ASSIGN:                  // aca se imprime instrucciones con 2 operadores
       printf("%s   %s  %s\n", get_operation_string(i), i -> result -> id, get_temporal_string(i -> op1));
       break;
-    case PLUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: // aca con 3 operadores
+    case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: // aca con 3 operadores
       printf("%s   %s  %s  %s\n", get_operation_string(i), i -> result -> id, i -> op1 -> id, i -> op2 -> id);
       break;
     default:
