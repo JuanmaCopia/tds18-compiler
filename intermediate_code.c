@@ -153,6 +153,7 @@ int get_jump_instruction_from_operation(int op) {
     case AND: return JZ;
     case OR: return JZ;
     case NOT: return JZ;
+    default: return JZ;
   }
 }
 
