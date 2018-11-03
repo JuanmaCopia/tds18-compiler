@@ -535,6 +535,7 @@ char * get_type_node_string(TypeNode tn) {
     case _method_call: return "method call";
     case _return: return "return";
     case _literal: return "literal";
+    case _id: return "id";
   }
 }
 
@@ -814,6 +815,7 @@ prog: _PROGRAM_ scope_open prog_body scope_close
     {
       print_functions();
       generate_fun_code(fun_list_head);
+      print_instructions();
       if (!check_functions_return_types()) {
         yyerror(error_message);
         return -1;
