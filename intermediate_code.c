@@ -252,7 +252,14 @@ InstructionNode * create_instruction_2op_operation(ASTNode * root) {
   printf("encuentra un operador \n");
   InstructionNode * instruction = create_instruction_from_ASTNode(root);
   instruction -> result = create_temporal();
-  instruction -> op1 = create_statement_instructions(root -> left_child) -> result;
+  if ((instruction -> operation == MINUS) && (root -> left_child == NULL)) {
+    InstructionNode * zero_temp = create_TEMP_instruction(create_temporal_with_value(0, false));
+    add_instruction(zero_temp);
+    instruction -> op1 = zero_temp -> result;
+  }
+  else {
+    instruction -> op1 = create_statement_instructions(root -> left_child) -> result;
+  }
   instruction -> op2 = create_statement_instructions(root -> right_child) -> result;
   add_instruction(create_TEMP_instruction(instruction -> result));
   add_instruction(instruction);
