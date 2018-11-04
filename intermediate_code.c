@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "structs.h"
 
-
-
 #define PLUS '+'
 #define MINUS '-'
 #define PROD '*'
@@ -25,6 +23,7 @@
 #define TMP2 't' + '2'
 #define CALL 'c'
 #define END_FUN 'e' + 'f'
+#define PUSH 'p'
 
 #define JMP 'j'
 #define JZ 'j' + 'z' 
@@ -39,6 +38,50 @@
 InstructionNode * head, *last;
 int temp_quantity = 0;
 int label_quantity = 0;
+
+InstructionNode * fun_label_queue = NULL;
+
+void add_label_to_queue(InstructionNode * fun_label) {
+  if (fun_label_queue == NULL)
+    fun_label_queue = fun_label;
+  else {
+    fun_label -> next = fun_label_queue;
+    fun_label_queue -> back = fun_label;
+    fun_label_queue = fun_label;
+  }
+}
+
+void add_instruction_from_queue(InstructionNode * fun_label) {
+  InstructionNode * pre, * next;
+  pre = fun_label -> back;
+  next = fun_label -> next;
+  pre -> next = next;
+  next -> back = pre;
+  fun_label -> next = NULL;
+  fun_label -> back = NULL;
+  add_instruction(fun_label);
+}
+
+InstructionNode * find_label(char * id) {
+  InstructionNode * aux = head;
+  while (aux != NULL) {
+
+    if (strcmp(aux -> result -> id, id) == 0) {
+      return aux;
+    }
+    aux = aux -> next;
+  }
+  //The label is not in the added instructions.- It may be in queque
+  aux = fun_label_queue;
+  while (aux != NULL) {
+    printf("%s\n", aux -> result -> id);
+    if (strcmp(aux -> result -> id, id) == 0) {
+      return aux;
+    }
+    aux = aux -> next;
+  }
+  return NULL;
+}
 
 char * get_type_node_string(TypeNode tn);
 
@@ -103,6 +146,12 @@ VarNode * create_label() {
   VarNode * new_node = create_var_node();
   new_node -> id = res;
   label_quantity++;
+  return new_node;
+}
+
+VarNode * create_label_with_id(char * id) {
+  VarNode * new_node = create_var_node();
+  new_node -> id = id;
   return new_node;
 }
 
@@ -189,6 +238,13 @@ InstructionNode * create_LABEL_instruction(VarNode * var_data) {
   return create_instructionNode(LABEL, var_data, NULL, NULL);
 }
 
+/*
+  Creates an instruction that represents a PUSH
+*/
+InstructionNode * create_PUSH_instruction(VarNode * var_data) {
+  return create_instructionNode(PUSH, var_data, NULL, NULL);
+}
+
 InstructionNode * create_statement_instructions(ASTNode * root);
 
 InstructionNode * create_instruction_conditional_jump(int operation, VarNode * jmp_target, VarNode * cond_result) {
@@ -248,6 +304,37 @@ void create_instruction_while(ASTNode * root) {
   //added_END_OF_WHILE_label
 }
 
+void create_instruction_method_call(ASTNode * root) {
+  InstructionNode * return_label = create_LABEL_instruction(create_label());
+  //Created return label
+  add_instruction(create_PUSH_instruction(return_label -> result));
+  //Pushed Return Label
+  int parameters_quantity = 0;
+  ASTNode * aux = root -> right_child;
+  while (aux != NULL) {
+    InstructionNode * param_temp_instruct = create_TEMP_instruction(create_temporal_with_value(aux -> var_data -> value, aux -> var_data -> is_boolean));
+    //Created temporal with current param
+    add_instruction(param_temp_instruct);
+    //Added temporal instruction
+    add_instruction(create_PUSH_instruction(param_temp_instruct -> result));
+    //Added push instruction of current param
+    parameters_quantity++;
+  }
+  InstructionNode * params_quantity_temp_instruct = create_TEMP_instruction(create_temporal_with_value(parameters_quantity, false));
+  add_instruction(params_quantity_temp_instruct);
+  //Added temporal with quantity of parameters
+  add_instruction(create_PUSH_instruction(params_quantity_temp_instruct -> result));
+  //Added push instruction of quantity of current params
+  InstructionNode * fun_called_label = find_label(root -> function_data -> id);
+  if (fun_called_label == NULL) {
+    fun_called_label = create_LABEL_instruction(create_label_with_id(root -> function_data -> id));
+    add_label_to_queue(fun_called_label);
+  }
+  add_instruction(create_instruction_conditional_jump(JMP, fun_called_label -> result, NULL));
+  add_instruction(return_label);
+  
+}
+
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
   printf("encuentra un operador \n");
   InstructionNode * instruction = create_instruction_from_ASTNode(root);
@@ -300,7 +387,9 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
         return create_instruction_2op_operation(root);
       case _assign:
         return create_instruction_assignment(root);
-      case _method_call: break;
+      case _method_call: 
+        create_instruction_method_call(root);
+        break;
       case _return: break;
       case _id:
         return create_TEMP_instruction(root -> var_data);
@@ -329,31 +418,32 @@ void generate_intermediate_code(ASTNode * root) {
 */
 char * get_operation_string(InstructionNode * i) {
   switch (i -> operation) {
-    case PLUS:   return "PLUS";
-    case PROD:   return "PROD";
-    case MOD:    return "MOD";
-    case DIV:    return "DIV";
-    case MINUS:  return "MINS";
-    case EQUALS: return "EQUL";
-    case OR:     return "OR";
-    case AND:    return "AND";
-    case CALL:   return "CALL";
-    case END_FUN:   return "ENDF";
-    case TMP1:   return "TMP1";
-    case TMP2:   return "TMP2";
-    case GREATER_THAN: return "GRTR";
-    case LESSER_THAN:  return "LSSR";
-    case ASSIGN: return "ASGN";
-    case LABEL: return "LABL";
-    case JMP: return "JMP";
-    case JZ: return "JZ";
-    case JNZ: return "JNZ";
-    case JE: return "JE";
-    case JNE: return "JNE";
-    case JG: return "JG";
-    case JL: return "JL";
-    case JGE: return "JGE";
-    case JLE: return "JLE";
+    case PLUS:          return "PLUS";
+    case PROD:          return "PROD";
+    case MOD:           return "MOD";
+    case DIV:           return "DIV";
+    case MINUS:         return "MINS";
+    case EQUALS:        return "EQUL";
+    case OR:            return "OR";
+    case AND:           return "AND";
+    case CALL:          return "CALL";
+    case END_FUN:       return "ENDF";
+    case PUSH:          return "PUSH";
+    case TMP1:          return "TMP1";
+    case TMP2:          return "TMP2";
+    case GREATER_THAN:  return "GRTR";
+    case LESSER_THAN:   return "LSSR";
+    case ASSIGN:        return "ASGN";
+    case LABEL:         return "LABL";
+    case JMP:           return "JMP";
+    case JZ:            return "JZ";
+    case JNZ:           return "JNZ";
+    case JE:            return "JE";
+    case JNE:           return "JNE";
+    case JG:            return "JG";
+    case JL:            return "JL";
+    case JGE:           return "JGE";
+    case JLE:           return "JLE";
   }
 }
 
@@ -384,7 +474,7 @@ char * get_temporal_string(VarNode * temp) {
 */
 void print_instruction(InstructionNode * i) {
   switch (i -> operation) {
-    case TMP1: case CALL: case END_FUN: case LABEL: case JMP: case JZ: case JNZ: case JE: case JNE: case JG: case JL: case JGE: case JLE:      // aca se imprimen instrucciones con un solo operador
+    case TMP1: case CALL: case END_FUN: case PUSH: case LABEL: case JMP: case JZ: case JNZ: case JE: case JNE: case JG: case JL: case JGE: case JLE:      // aca se imprimen instrucciones con un solo operador
       printf("%s   %s\n", get_operation_string(i), i -> result -> id);
       break;
     case TMP2: case ASSIGN:                  // aca se imprime instrucciones con 2 operadores
@@ -419,7 +509,16 @@ void print_instructions() {
 void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
-    add_instruction(create_instructionNode(CALL, create_temporal_with_id(aux -> id), NULL, NULL));
+    //add_instruction(create_instructionNode(CALL, create_temporal_with_id(aux -> id), NULL, NULL));
+    InstructionNode * fun_label = find_label(aux -> id);
+    if (fun_label != NULL) {
+      add_instruction_from_queue(fun_label);
+    }
+    else {
+      fun_label = create_LABEL_instruction(create_label_with_id(aux -> id));
+      add_instruction(fun_label);
+    }
+    //Created a label to access function
     generate_intermediate_code(aux -> body);
     add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
     aux = aux -> next;
