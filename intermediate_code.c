@@ -204,7 +204,11 @@ void add_else_instructions(ASTNode * root) {
   create_statement_instructions(root -> right_child -> right_child);
 }
 
-InstructionNode * create_instruction_if(ASTNode * root) {
+void add_while_instructions(ASTNode * root) {
+  create_statement_instructions(root -> right_child);
+}
+
+void create_instruction_if(ASTNode * root) {
   InstructionNode * condition_expr = create_statement_instructions(root -> left_child);
   //Condition_expr_added
   InstructionNode * condition_jmp = create_instruction_conditional_jump(get_jump_instruction_from_operation(condition_expr -> operation), NULL, condition_expr -> result);
@@ -223,6 +227,25 @@ InstructionNode * create_instruction_if(ASTNode * root) {
   //ELSE_instructions_added
   add_instruction(end_if_label);
   //added end_of_if_label
+}
+
+void create_instruction_while(ASTNode * root) {
+  InstructionNode * init_of_while = create_LABEL_instruction(create_label());
+  InstructionNode * end_of_while = create_LABEL_instruction(create_label());
+  add_instruction(init_of_while);
+  //added while label
+  InstructionNode * condition_expr = create_statement_instructions(root -> left_child);
+  //Condition_expr_added
+  InstructionNode * condition_jmp = create_instruction_conditional_jump(get_jump_instruction_from_operation(condition_expr -> operation), NULL, condition_expr -> result);
+  condition_jmp -> result = end_of_while -> result;
+  add_instruction(condition_jmp);
+  //condition_jmp_added
+  add_while_instructions(root);
+  //WHILE_instructions_added
+  add_instruction(create_instruction_conditional_jump(JMP, init_of_while -> result, NULL));
+  //added_while_escape
+  add_instruction(end_of_while);
+  //added_END_OF_WHILE_label
 }
 
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
@@ -259,9 +282,13 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
   printf("entra a la rec, este nodo es un %s\n", get_type_node_string(root->node_type));
   if (root != NULL) {
     switch (root -> node_type) {
-      case _if: create_instruction_if(root);
+      case _if: 
+        create_instruction_if(root);
+        break;
       case _if_body: break;
-      case _while: break;
+      case _while: 
+        create_instruction_while(root);
+        break;
       case _arith_op: case _boolean_op:
         return create_instruction_2op_operation(root);
       case _assign:
