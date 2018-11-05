@@ -546,6 +546,7 @@ void generate_fun_parameters_treatment(FunctionNode * f) {
     //Estos son labels del ciclo que se encargara de hacer pop a todos los parametros actuales
     InstructionNode * init_of_while = create_LABEL_instruction(create_label());
     InstructionNode * end_of_while = create_LABEL_instruction(create_label());
+    InstructionNode * temp_param;
     add_instruction(current_param);
     add_instruction(parameters_quantity);
     add_instruction(create_POP_instruction(parameters_quantity -> result));
@@ -556,6 +557,9 @@ void generate_fun_parameters_treatment(FunctionNode * f) {
     add_instruction(param_comparer);
     add_instruction(create_instruction_conditional_jump(JE, end_of_while -> result, param_comparer -> result));
     add_instruction(param_counter);
+    temp_param = create_TEMP_instruction(create_temporal());
+    add_instruction(temp_param);
+    add_instruction(create_POP_instruction(temp_param -> result));
     add_instruction(create_instruction_conditional_jump(JMP, init_of_while -> result, NULL));
     add_instruction(end_of_while);
     //added_END_OF_WHILE_label
