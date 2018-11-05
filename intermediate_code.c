@@ -55,8 +55,10 @@ void add_instruction_from_queue(InstructionNode * fun_label) {
   InstructionNode * pre, * next;
   pre = fun_label -> back;
   next = fun_label -> next;
-  pre -> next = next;
-  next -> back = pre;
+  if (pre != NULL)
+    pre -> next = next;
+  if (next != NULL)
+    next -> back = pre;
   fun_label -> next = NULL;
   fun_label -> back = NULL;
   add_instruction(fun_label);
@@ -66,7 +68,7 @@ InstructionNode * find_label(char * id) {
   InstructionNode * aux = head;
   while (aux != NULL) {
 
-    if (strcmp(aux -> result -> id, id) == 0) {
+    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
       return aux;
     }
     aux = aux -> next;
@@ -74,8 +76,7 @@ InstructionNode * find_label(char * id) {
   //The label is not in the added instructions.- It may be in queque
   aux = fun_label_queue;
   while (aux != NULL) {
-    printf("%s\n", aux -> result -> id);
-    if (strcmp(aux -> result -> id, id) == 0) {
+    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
       return aux;
     }
     aux = aux -> next;
@@ -512,6 +513,7 @@ void generate_fun_code(FunctionNode * head) {
     //add_instruction(create_instructionNode(CALL, create_temporal_with_id(aux -> id), NULL, NULL));
     InstructionNode * fun_label = find_label(aux -> id);
     if (fun_label != NULL) {
+      printf("\n\n\n%s\n%s\n\n\n", fun_label -> result -> id, get_operation_string(fun_label));
       add_instruction_from_queue(fun_label);
     }
     else {
