@@ -39,89 +39,8 @@
 InstructionNode * head, *last;
 int temp_quantity = 0;
 int label_quantity = 0;
-
 //This is a queue of function labels where can be stored and added to instructions list when necessary
 InstructionNode * fun_label_queue = NULL;
-
-void add_label_to_queue(InstructionNode * fun_label) {
-  if (fun_label_queue == NULL)
-    fun_label_queue = fun_label;
-  else {
-    fun_label -> next = fun_label_queue;
-    fun_label_queue -> back = fun_label;
-    fun_label_queue = fun_label;
-  }
-}
-
-/*
-  This function add a instruction from queue to the intermediate-code list of instructions
-*/
-void add_instruction_from_queue(InstructionNode * fun_label) {
-  InstructionNode * pre, * next;
-  pre = fun_label -> back;
-  next = fun_label -> next;
-  if (pre != NULL)
-    pre -> next = next;
-  if (next != NULL)
-    next -> back = pre;
-  fun_label -> next = NULL;
-  fun_label -> back = NULL;
-  add_instruction(fun_label);
-}
-
-/*
-  This function search for a label in the intermediat-code list or in the queue and returns its instructions
-*/
-InstructionNode * find_label(char * id) {
-  InstructionNode * aux = head;
-  while (aux != NULL) {
-
-    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
-      return aux;
-    }
-    aux = aux -> next;
-  }
-  //The label is not in the added instructions.- It may be in queque
-  aux = fun_label_queue;
-  while (aux != NULL) {
-    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
-      return aux;
-    }
-    aux = aux -> next;
-  }
-  return NULL;
-}
-
-char * get_type_node_string(TypeNode tn);
-
-/*
-  Adds an instruction to the list.
-*/
-void add_instruction(InstructionNode * node) {
-  if (head != NULL && last != NULL) {
-    last -> next = node;
-    node -> back = last;
-    last = node;
-  }
-  else {
-    head = node;
-    last = node;
-  }
-}
-
-/*
-  Creates a new instruction.
-*/
-InstructionNode * create_instructionNode(int operation, VarNode * result, VarNode * op1, VarNode * op2) {
-  InstructionNode * new_node = malloc(sizeof(InstructionNode));
-  new_node -> operation = operation;
-  new_node -> op1 = op1;
-  new_node -> op2 = op2;
-  new_node -> result = result;
-  new_node -> next= NULL;
-  new_node -> back= NULL;
-  return new_node;
-}
 
 /*
   Creates a new varnode
@@ -182,6 +101,86 @@ VarNode * create_temporal_with_id(char * id) {
   VarNode * new_node = create_var_node();
   new_node -> id = id;
   return new_node;
+}
+
+void add_label_to_queue(InstructionNode * fun_label) {
+  if (fun_label_queue == NULL)
+    fun_label_queue = fun_label;
+  else {
+    fun_label -> next = fun_label_queue;
+    fun_label_queue -> back = fun_label;
+    fun_label_queue = fun_label;
+  }
+}
+
+char * get_type_node_string(TypeNode tn);
+
+/*
+  Adds an instruction to the list.
+*/
+void add_instruction(InstructionNode * node) {
+  if (head != NULL && last != NULL) {
+    last -> next = node;
+    node -> back = last;
+    last = node;
+  }
+  else {
+    head = node;
+    last = node;
+  }
+}
+
+/*
+  Creates a new instruction.
+*/
+InstructionNode * create_instructionNode(int operation, VarNode * result, VarNode * op1, VarNode * op2) {
+  InstructionNode * new_node = malloc(sizeof(InstructionNode));
+  new_node -> operation = operation;
+  new_node -> op1 = op1;
+  new_node -> op2 = op2;
+  new_node -> result = result;
+  new_node -> next= NULL;
+  new_node -> back= NULL;
+  return new_node;
+}
+
+/*
+  This function add a instruction from queue to the intermediate-code list of instructions
+*/
+void add_instruction_from_queue(InstructionNode * fun_label) {
+  InstructionNode * pre, * next;
+  pre = fun_label -> back;
+  next = fun_label -> next;
+  if (pre != NULL)
+    pre -> next = next;
+  if (next != NULL)
+    next -> back = pre;
+  fun_label -> next = NULL;
+  fun_label -> back = NULL;
+  add_instruction(fun_label);
+}
+
+/*
+  This function search for a label in the intermediat-code list or in the queue and returns its instructions
+*/
+InstructionNode * find_label(char * id) {
+  InstructionNode * aux = head;
+  while (aux != NULL) {
+
+    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
+      return aux;
+    }
+    aux = aux -> next;
+  }
+  //The label is not in the added instructions.- It may be in queque
+  aux = fun_label_queue;
+  while (aux != NULL) {
+    if ((strcmp(aux -> result -> id, id) == 0) && (aux -> operation == LABEL)) {
+      return aux;
+    }
+    aux = aux -> next;
+  }
+  return NULL;
 }
 
 /*
