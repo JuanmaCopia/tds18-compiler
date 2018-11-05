@@ -2,13 +2,13 @@ program
 begin
     integer x;
 
-    void functionX()
+    void functionX(integer param)
         begin
-            x = 5;
+            x = param;
         end
 
     void main()
         begin
-            functionX();
+            functionX(7);
         end
 end
