@@ -475,17 +475,20 @@ char * get_temporal_string(VarNode * temp) {
 */
 void print_instruction(InstructionNode * i) {
   switch (i -> operation) {
-    case TMP1: case CALL: case END_FUN: case PUSH: case LABEL: case JMP: case JZ: case JNZ: case JE: case JNE: case JG: case JL: case JGE: case JLE:      // aca se imprimen instrucciones con un solo operador
+    case LABEL:
       printf("%s   %s\n", get_operation_string(i), i -> result -> id);
       break;
+    case TMP1: case CALL: case END_FUN: case PUSH: case JMP: case JZ: case JNZ: case JE: case JNE: case JG: case JL: case JGE: case JLE:      // aca se imprimen instrucciones con un solo operador
+      printf("\t%s   %s\n", get_operation_string(i), i -> result -> id);
+      break;
     case TMP2: case ASSIGN:                  // aca se imprime instrucciones con 2 operadores
-      printf("%s   %s  %s\n", get_operation_string(i), i -> result -> id, get_temporal_string(i -> op1));
+      printf("\t%s   %s  %s\n", get_operation_string(i), i -> result -> id, get_temporal_string(i -> op1));
       break;
     case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: // aca con 3 operadores
-      printf("%s   %s  %s  %s\n", get_operation_string(i), i -> result -> id, i -> op1 -> id, i -> op2 -> id);
+      printf("\t%s   %s  %s  %s\n", get_operation_string(i), i -> result -> id, i -> op1 -> id, i -> op2 -> id);
       break;
     default:
-      printf("UNKNOWN INSTRUCTION\n");
+      printf("\tUNKNOWN INSTRUCTION\n");
       break;
   }
 }
