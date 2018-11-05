@@ -40,6 +40,7 @@ InstructionNode * head, *last;
 int temp_quantity = 0;
 int label_quantity = 0;
 
+//This is a queue of function labels where can be stored and added to instructions list when necessary
 InstructionNode * fun_label_queue = NULL;
 
 void add_label_to_queue(InstructionNode * fun_label) {
@@ -52,6 +53,9 @@ void add_label_to_queue(InstructionNode * fun_label) {
   }
 }
 
+/*
+  This function add a instruction from queue to the intermediate-code list of instructions
+*/
 void add_instruction_from_queue(InstructionNode * fun_label) {
   InstructionNode * pre, * next;
   pre = fun_label -> back;
@@ -65,6 +69,9 @@ void add_instruction_from_queue(InstructionNode * fun_label) {
   add_instruction(fun_label);
 }
 
+/*
+  This function search for a label in the intermediat-code list or in the queue and returns its instructions
+*/
 InstructionNode * find_label(char * id) {
   InstructionNode * aux = head;
   while (aux != NULL) {
@@ -336,8 +343,10 @@ void create_instruction_method_call(ASTNode * root) {
   //Added push instruction of quantity of current params
   InstructionNode * fun_called_label = find_label(root -> function_data -> id);
   if (fun_called_label == NULL) {
+    //This means the function is not created yet
     fun_called_label = create_LABEL_instruction(create_label_with_id(root -> function_data -> id));
     add_label_to_queue(fun_called_label);
+    //The label was created and saved in an alternative queue.- So it can be added later
   }
   add_instruction(create_instruction_conditional_jump(JMP, fun_called_label -> result, NULL));
   add_instruction(return_label);
@@ -521,12 +530,19 @@ void print_instructions() {
 */
 void generate_fun_parameters_treatment(FunctionNode * f) {
   if (f -> id != "main") {
+    //Esta es la cantidad de parametros que fueron popeados (Originalmente 0)
     InstructionNode * current_param = create_TEMP_instruction(create_temporal_with_value(0, false));
+    //Esta es la cantidad de parametros que fueron pusheados antes del jmp a la funcion
     InstructionNode * parameters_quantity = create_TEMP_instruction(create_temporal());
+    //En esta instruccion se guardara el resultado de comparar los dos datos anteriores
     InstructionNode * compare_params_quantity = create_TEMP_instruction(create_temporal());
+    //Esta instruccion es una simple constante 1, para incrementar current_param en el futuro.-
     InstructionNode * constant_one = create_TEMP_instruction(create_temporal_with_value(1, false));
+    //Esta instruccion setea compare_params_quantity
     InstructionNode * param_comparer = create_instructionNode(EQUALS, compare_params_quantity -> result, parameters_quantity -> result, current_param -> result);
+    //Esta instruccion incrementa en 1 current_param
     InstructionNode * param_counter = create_instructionNode(PLUS, current_param -> result, current_param -> result, constant_one -> result);
+    //Estos son labels del ciclo que se encargara de hacer pop a todos los parametros actuales
     InstructionNode * init_of_while = create_LABEL_instruction(create_label());
     InstructionNode * end_of_while = create_LABEL_instruction(create_label());
     add_instruction(current_param);
@@ -551,7 +567,7 @@ void generate_fun_parameters_treatment(FunctionNode * f) {
 void generate_fun_label(FunctionNode * f) {
   InstructionNode * fun_label = find_label(f -> id);
   if (fun_label != NULL) {
-    printf("\n\n\n%s\n%s\n\n\n", fun_label -> result -> id, get_operation_string(fun_label));
+    //Si la variable fue encontrada, significa que ya existe el label creado.- Pero no fue agregado al programa aun
     add_instruction_from_queue(fun_label);
   }
   else {
@@ -567,8 +583,9 @@ void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
     generate_fun_label(aux);
-    generate_fun_parameters_treatment(aux);
     //Created a label to access function
+    generate_fun_parameters_treatment(aux);
+    //All params pop generated
     generate_intermediate_code(aux -> body);
     add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
     aux = aux -> next;
