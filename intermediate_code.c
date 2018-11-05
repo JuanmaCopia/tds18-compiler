@@ -334,6 +334,8 @@ void create_instruction_method_call(ASTNode * root) {
     add_instruction(create_PUSH_instruction(param_temp_instruct -> result));
     //Added push instruction of current param
     parameters_quantity++;
+    //Incremented the quantity of parameters
+    aux = aux -> right_child;
   }
   InstructionNode * params_quantity_temp_instruct = create_TEMP_instruction(create_temporal_with_value(parameters_quantity, false));
   add_instruction(params_quantity_temp_instruct);
