@@ -372,8 +372,12 @@ InstructionNode * create_instruction_method_call(ASTNode * root) {
   add_instruction(create_instruction_conditional_jump(JMP, fun_called_label -> result, NULL));
   add_instruction(return_label);
   //Added label to return after function
-
   return returned_data();
+}
+
+void create_instruction_return(ASTNode * root) {
+  InstructionNode * data_to_return = create_statement_instructions(root -> right_child);
+  add_instruction(create_PUSH_instruction(data_to_return -> result));
 }
 
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
@@ -431,7 +435,9 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
       case _method_call: 
         return create_instruction_method_call(root);
         break;
-      case _return: break;
+      case _return: 
+        create_instruction_return(root);
+        break;
       case _id:
         return create_TEMP_instruction(root -> var_data);
       case _literal:
@@ -445,10 +451,10 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
 
 void push_data_is_returned(ASTNode * last_node) {
   InstructionNode * need_to_pop;
-  if (last_node -> node_type = _return)
-    need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
-  else
+  if ((last_node -> node_type != _return) || (last_node -> right_child == NULL))
     need_to_pop = create_TEMP_instruction(create_temporal_with_value(0, true));
+  else
+    need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
   add_instruction(need_to_pop);
   add_instruction(create_PUSH_instruction(need_to_pop -> result));
 }
