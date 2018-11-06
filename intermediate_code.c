@@ -372,7 +372,8 @@ InstructionNode * create_instruction_method_call(ASTNode * root) {
   add_instruction(create_instruction_conditional_jump(JMP, fun_called_label -> result, NULL));
   add_instruction(return_label);
   //Added label to return after function
-  return returned_data();
+  InstructionNode * data = returned_data();
+  return data;
 }
 
 void create_instruction_return(ASTNode * root) {
@@ -449,20 +450,29 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
   return NULL;
 }
 
-void push_data_is_returned(ASTNode * last_node) {
+void push_data_and_return(ASTNode * last_node, bool is_main) {
+  InstructionNode * return_label = create_TEMP_instruction(create_temporal());
+  InstructionNode * load_return_label = create_POP_instruction(return_label -> result);
+  InstructionNode * return_instruction = create_instruction_conditional_jump(JMP, return_label -> result, NULL);
   InstructionNode * need_to_pop;
   if ((last_node -> node_type != _return) || (last_node -> right_child == NULL))
     need_to_pop = create_TEMP_instruction(create_temporal_with_value(0, true));
   else
     need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
+  if (!is_main) {
+    add_instruction(return_label);
+    add_instruction(load_return_label);
+  }
   add_instruction(need_to_pop);
   add_instruction(create_PUSH_instruction(need_to_pop -> result));
+  if (!is_main)
+    add_instruction(return_instruction);
 }
 
 /*
   Creates the intermediate code.
 */
-void generate_intermediate_code(ASTNode * root) {
+void generate_intermediate_code(ASTNode * root, char * fun_name) {
   ASTNode * aux = root;
   ASTNode * pre_aux;
   while (aux != NULL) {
@@ -470,7 +480,7 @@ void generate_intermediate_code(ASTNode * root) {
     pre_aux = aux;
     aux = get_next_statement(aux);
     if (aux == NULL)
-      push_data_is_returned(pre_aux);
+      push_data_and_return(pre_aux, fun_name == "main");
   }
 }
 
@@ -633,7 +643,7 @@ void generate_fun_code(FunctionNode * head) {
     //Created a label to access function
     generate_fun_parameters_treatment(aux);
     //All params pop generated
-    generate_intermediate_code(aux -> body);
+    generate_intermediate_code(aux -> body, aux -> id);
     add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
     aux = aux -> next;
   }
