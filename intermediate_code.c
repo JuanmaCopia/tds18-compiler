@@ -319,7 +319,27 @@ void create_instruction_while(ASTNode * root) {
   //added_END_OF_WHILE_label
 }
 
-void create_instruction_method_call(ASTNode * root) {
+InstructionNode * returned_data() {
+  InstructionNode * data_retrieved_from_stack_label = create_LABEL_instruction(create_label());
+  //created label to jmp if no data was returned
+  InstructionNode * popped_data = create_TEMP_instruction(create_temporal());
+  //created temp to save the popped
+  InstructionNode * data_was_returned = create_POP_instruction(popped_data -> result);
+  //created pop instruction so we can know if some data was returned (0 is false and 1 is true)
+  InstructionNode * jmp_if_no_data_returned = create_instruction_conditional_jump(JZ, data_retrieved_from_stack_label -> result, popped_data -> result);
+  //created jump to be used if no data was returned from function
+  InstructionNode * retrieve_data = create_POP_instruction(popped_data -> result);
+  ////created pop instruction to retrieve the returned data
+  add_instruction(popped_data);
+  add_instruction(data_was_returned);
+  add_instruction(jmp_if_no_data_returned);
+  add_instruction(retrieve_data);
+  add_instruction(data_retrieved_from_stack_label);
+
+  return popped_data;
+}
+
+InstructionNode * create_instruction_method_call(ASTNode * root) {
   InstructionNode * return_label = create_LABEL_instruction(create_label());
   //Created return label
   add_instruction(create_PUSH_instruction(return_label -> result));
@@ -351,7 +371,9 @@ void create_instruction_method_call(ASTNode * root) {
   }
   add_instruction(create_instruction_conditional_jump(JMP, fun_called_label -> result, NULL));
   add_instruction(return_label);
-  
+  //Added label to return after function
+
+  return returned_data();
 }
 
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
@@ -407,7 +429,7 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
       case _assign:
         return create_instruction_assignment(root);
       case _method_call: 
-        create_instruction_method_call(root);
+        return create_instruction_method_call(root);
         break;
       case _return: break;
       case _id:
