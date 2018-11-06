@@ -443,14 +443,28 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
   return NULL;
 }
 
+void push_data_is_returned(ASTNode * last_node) {
+  InstructionNode * need_to_pop;
+  if (last_node -> node_type = _return)
+    need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
+  else
+    need_to_pop = create_TEMP_instruction(create_temporal_with_value(0, true));
+  add_instruction(need_to_pop);
+  add_instruction(create_PUSH_instruction(need_to_pop -> result));
+}
+
 /*
   Creates the intermediate code.
 */
 void generate_intermediate_code(ASTNode * root) {
   ASTNode * aux = root;
+  ASTNode * pre_aux;
   while (aux != NULL) {
     create_statement_instructions(aux);
+    pre_aux = aux;
     aux = get_next_statement(aux);
+    if (aux == NULL)
+      push_data_is_returned(pre_aux);
   }
 }
 
