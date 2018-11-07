@@ -376,9 +376,9 @@ InstructionNode * create_instruction_method_call(ASTNode * root) {
   return data;
 }
 
-void create_instruction_return(ASTNode * root) {
+InstructionNode * create_instruction_return(ASTNode * root) {
   InstructionNode * data_to_return = create_statement_instructions(root -> right_child);
-  add_instruction(create_PUSH_instruction(data_to_return -> result));
+  return create_PUSH_instruction(data_to_return -> result);
 }
 
 InstructionNode * create_instruction_2op_operation(ASTNode * root) {
@@ -437,7 +437,7 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
         return create_instruction_method_call(root);
         break;
       case _return: 
-        create_instruction_return(root);
+        return create_instruction_return(root);
         break;
       case _id:
         return create_TEMP_instruction(root -> var_data);
@@ -450,18 +450,21 @@ InstructionNode * create_statement_instructions(ASTNode * root) {
   return NULL;
 }
 
-void push_data_and_return(ASTNode * last_node, bool is_main) {
+void push_data_and_return(InstructionNode * last_inst_created, bool is_main) {
   InstructionNode * return_label = create_TEMP_instruction(create_temporal());
   InstructionNode * load_return_label = create_POP_instruction(return_label -> result);
   InstructionNode * return_instruction = create_instruction_conditional_jump(JMP, return_label -> result, NULL);
   InstructionNode * need_to_pop;
-  if ((last_node -> node_type != _return) || (last_node -> right_child == NULL))
-    need_to_pop = create_TEMP_instruction(create_temporal_with_value(0, true));
-  else
-    need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
   if (!is_main) {
     add_instruction(return_label);
     add_instruction(load_return_label);
+  }
+  if ((last_inst_created != NULL) && (last_inst_created -> operation == PUSH)) {
+    need_to_pop = create_TEMP_instruction(create_temporal_with_value(1, true));
+    add_instruction(last_inst_created);
+  }
+  else {
+    need_to_pop = create_TEMP_instruction(create_temporal_with_value(0, true));
   }
   add_instruction(need_to_pop);
   add_instruction(create_PUSH_instruction(need_to_pop -> result));
@@ -474,13 +477,12 @@ void push_data_and_return(ASTNode * last_node, bool is_main) {
 */
 void generate_intermediate_code(ASTNode * root, char * fun_name) {
   ASTNode * aux = root;
-  ASTNode * pre_aux;
+  InstructionNode * last_inst_created;
   while (aux != NULL) {
-    create_statement_instructions(aux);
-    pre_aux = aux;
+    last_inst_created = create_statement_instructions(aux);
     aux = get_next_statement(aux);
     if (aux == NULL)
-      push_data_and_return(pre_aux, fun_name == "main");
+      push_data_and_return(last_inst_created, fun_name == "main");
   }
 }
 
