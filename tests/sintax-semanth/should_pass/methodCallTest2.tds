@@ -1,19 +1,15 @@
 program
 begin
-	integer x;
 
 	integer functionX(integer z, integer w)
 		begin
-				integer x, y;
-				x = 23 + 2;
-				y = 20 + 5;
-				x = x + y;
-				return x;
+			return z+w;
 		end
 
 	void main()
 		begin
-				integer result;
-				result = functionX(5, 10);
+			integer result;
+			result = functionX(5, 10);
 		end
 end
+

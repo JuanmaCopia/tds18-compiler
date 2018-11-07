@@ -1,0 +1,12 @@
+pushear el primer label de "retorno" antes de llamar a una funcion no es necesario. (eso lo maneja el assembler con instrucciones call y ret)
+No es necesario pushear cantidad de parametros antes de llamar a una funcion ni "salvar" los parametros con un while dentro de la funcion.
+recordar que las func externas usan la convecion de c.
+Usar el eax en lugar del stack para retornar en funciones, no es necesario decir si una funcion retorna algo o no.
+Cambiar instruccion JMP por CALL en funciones y agregarle un segundo parametro para indicar el temporal donde se va a guardar el resultado.
+si usamos convencion de c, seria una buena idea crear los distintos push para los distintos registros, push1, push2, push3...
+Agregarle a los vernodes el offset y los tipos (global, local, parametro, temporal) (PREGUNTAR). SE HACE MIENTRAS SE CONTRSTRUYE EL ARBOL
+Agregar campo maximo offset a funciones, para el momento de generar assembler determinar el espacio a reservar.
+agregar tipo a funcion (si es externa o no).
+Sacar los TMP1 (duda).
+
+(LOS PARAMETROS SE EMPIEZA DESDE EL 16) POSITIVOS PARAMETROS, NEGATIVOS LOCALES.
