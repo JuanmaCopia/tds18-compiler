@@ -192,6 +192,8 @@ TypeNode get_node_type(int op) {
     return _return;
   else if (op == 'm')
     return _method_call;
+  else if (op == 'l')
+    return _literal;
   else if (op == 'b')
     return _if_body;
   else if (op == 'w')
@@ -201,7 +203,7 @@ TypeNode get_node_type(int op) {
   else if (op == '<' || op == '>' || op == 'e' || op == '&' || op == '|' || op == '!')
     return _boolean_op;
   else
-    return _literal;
+    return _id;
 }
 
 /*
@@ -292,7 +294,12 @@ ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
     return NULL;
   }
   else {
-    ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
+    ASTNode * new_leave;
+    if (var_data -> is_defined)
+      new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
+    else
+      new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
+
     new_leave -> data = var_data -> value;
     new_leave -> node_type = _id;
     new_leave -> is_boolean = var_data -> is_boolean;
@@ -305,7 +312,7 @@ ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
   Returns a new leave created from a value.
 */
 ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
-  ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
+  ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
   new_leave -> data = value;
   new_leave -> is_boolean = is_boolean;
   return new_leave;
@@ -348,7 +355,7 @@ bool is_callable(char * function_name, Parameter * params) {
 
 //Checked for Segmentation Fault by Santi.
 ASTNode * ast_from_parameters_list (Parameter * params_list) {
-  ASTNode * result = create_AST_node(NULL,'n',NULL);
+  ASTNode * result = create_AST_node(NULL,'l',NULL);
   Parameter * paramAuxNode = params_list;
   if (paramAuxNode != NULL) {
     if (paramAuxNode -> id != NULL) {

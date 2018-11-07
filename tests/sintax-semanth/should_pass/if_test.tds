@@ -1,0 +1,17 @@
+program
+begin
+
+	void main()
+		begin	
+			integer x;
+			bool asd;
+			asd = false;
+			if (asd) then begin
+				x = 10;
+			end
+			else begin
+				x = 0;
+			end
+		end
+
+end
