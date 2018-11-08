@@ -19,16 +19,14 @@ begin
 		end
 end
 
-funcion main:
-    TMP2 t0 5
-    TMP2 t1 10
+    BEGINF main
     PUSH t0
     PUSH t1
     CALL functionX t2
     ASGN result t2
     ENDF main
 
-funcion functionX:
+    BEGINF functionX:
     ADD t3 z w
-    RTRN t3
+    RETURN t3
     ENDF functionX

@@ -1,7 +1,4 @@
 %{
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "intermediate_code.c"
 
 VarNode * temporal_enviroment;                          // Holds the last closed enviroment
@@ -17,17 +14,7 @@ int yylex();
 int get_line_number();
 int get_column_number();
 
-/*
-  Creates and returns a new VarNode.
-*/
-VarNode * create_VarNode(char * id, int value, bool is_boolean) {
-  VarNode * new_node = malloc(sizeof(VarNode));
-  new_node -> id = id;
-  new_node -> value = value;
-  new_node -> is_boolean = is_boolean;
-  new_node -> next = NULL;
-  return new_node;
-}
+extern VarNode * create_VarNode(char * id, int value, bool is_boolean);
 
 /*
   Adds a new variable to the current enviroment of the symbol table.
