@@ -94,18 +94,24 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
   Prints a single instruction on cosole.
 */
 void print_instruction(InstructionNode * i) {
+  char op1_string[12];
+  char op2_string[12];
+  char result_string[12];
+  strcpy(op1_string, get_temporal_string(i -> op1));
+  strcpy(op2_string, get_temporal_string(i -> op2));
+  strcpy(result_string, get_temporal_string(i -> result));
   switch (i -> operation) {
     case LABEL: case BEGIN_FUN: case PSEUDO:
-      printf("%s   %s\n", get_operation_string(i), get_temporal_string(i -> result));
+      printf("%s   %s\n", get_operation_string(i), result_string);
       break;
-    case CALL: case END_FUN: case PUSH: case POP: case JMP: // aca se imprimen instrucciones con un solo operador
-      printf("%s   %s\n", get_operation_string(i), i -> result -> id);
+    case CALL: case END_FUN: case PUSH: case POP: case JMP: 
+      printf("%s   %s\n", get_operation_string(i), result_string);
       break;
-    case ASSIGN:                  // aca se imprime instrucciones con 2 operadores
-      printf("%s   %s  %s\n", get_operation_string(i), i -> result -> id, get_temporal_string(i -> op1));
+    case ASSIGN:
+      printf("%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
       break;
-    case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: // aca con 3 operadores
-      printf("%s   %s  %s  %s\n", get_operation_string(i), i -> result -> id, get_temporal_string(i -> op1), get_temporal_string(i -> op2));
+    case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN:
+      printf("%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
       break;
     default:
       printf("UNKNOWN INSTRUCTION\n");

@@ -5,7 +5,7 @@ begin
         begin
             integer x,y,z;
             bool asd;
-            x = 7 + 4;
+            x = 1 - 4;
             y = x * x;
             asd = true == false;
         end
