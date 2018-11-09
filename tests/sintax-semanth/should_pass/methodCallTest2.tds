@@ -1,7 +1,7 @@
 program
 begin
 
-	integer functionX(integer z, integer w)
+	integer functionX(integer z, integer w, integer q, integer l)
 		begin
 			return z+w;
 		end
@@ -9,7 +9,7 @@ begin
 	void main()
 		begin
 			integer result;
-			result = functionX(5, 10);
+			result = functionX(5, 10, 0, 0);
 		end
 end
 

@@ -29,6 +29,12 @@
 #define JMP 'j'
 #define PSEUDO 'p'
 
+#define JMP 'j'
+#define JE  'j' + 'e'
+#define JNE 'j' + 'n' + 'e'
+#define CMP 'c' + 'm'
+#define RETURN 'r'
+#define NEGAT 'n' + 'g'
 
 // return types of functions
 typedef enum return_types {
@@ -56,7 +62,8 @@ typedef enum varnode_kind {
 	_global,
   _local,
   _parameter,
-  _temporal
+  _temporal,
+  _label
 } VarNodeKind;
 
 // Struct that holds variables data
@@ -134,3 +141,11 @@ char * get_temporal_string(VarNode * temp);
 char * get_operation_string(InstructionNode * i);
 VarNode * get_var(ASTNode * node);
 InstructionNode * create_instruction(int operation);
+VarNode * create_label();
+VarNode * create_label_with_id(char * id);
+TypeNode get_node_type(int op);
+ReturnType get_return_type(int type_int_value);
+char * get_return_type_string(ReturnType value);
+char * get_type_node_string(TypeNode tn);
+char * get_string_representation(ASTNode * node);
+bool is_boolean_operation(int op);
