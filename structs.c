@@ -125,7 +125,8 @@ char * get_operation_string(InstructionNode * i) {
     case JNE:           return "JNE  ";
     case CMP:           return "CMP  ";
     case RETURN:        return "RETRN";
-    case NEGAT:           return "NEG  ";
+    case NEGAT:         return "NEG  ";
+    case EXTERN:        return "EXTRN";
     default:            return "------ UNKNOWN OPERATION ------";
   }
 }
