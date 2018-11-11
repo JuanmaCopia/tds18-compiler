@@ -1,13 +1,21 @@
 program
 begin
 
+	bool functionX(bool a)
+		begin
+			return !a;
+		end
+
+	bool functionA()
+		begin
+			return false;
+		end
+
 	void main()
 		begin	
 			integer x;
-			bool asd;
-			asd = false;
-			if (asd) then begin
-				x = 10;
+			if (functionX(functionA())) then begin
+				x = -10;
 			end
 			else begin
 				x = 0;

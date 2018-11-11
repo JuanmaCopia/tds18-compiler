@@ -1,7 +1,4 @@
 %{
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "intermediate_code.c"
 
 VarNode * temporal_enviroment;                          // Holds the last closed enviroment
@@ -17,17 +14,7 @@ int yylex();
 int get_line_number();
 int get_column_number();
 
-/*
-  Creates and returns a new VarNode.
-*/
-VarNode * create_VarNode(char * id, int value, bool is_boolean) {
-  VarNode * new_node = malloc(sizeof(VarNode));
-  new_node -> id = id;
-  new_node -> value = value;
-  new_node -> is_boolean = is_boolean;
-  new_node -> next = NULL;
-  return new_node;
-}
+extern VarNode * create_VarNode(char * id, int value, bool is_boolean);
 
 /*
   Adds a new variable to the current enviroment of the symbol table.
@@ -38,6 +25,56 @@ void add_var_to_symbol_table(char * var_id, int value, bool is_boolean) {
     new_var -> next = symbol_table -> variables;
   }
   symbol_table -> variables = new_var;
+}
+
+/*
+  Returns a new ASTNode
+*/
+ASTNode * create_AST_node(ASTNode * left_child, char op, ASTNode * right_child) {
+  ASTNode * new_node = (ASTNode *) malloc(sizeof(ASTNode));
+  new_node -> data = op;
+  new_node -> is_boolean = is_boolean_operation(op);
+  new_node -> line_num = get_line_number();
+  new_node -> col_num = get_column_number();
+  new_node -> node_type = get_node_type(op);
+  new_node -> var_data = NULL;
+  new_node -> function_data = NULL;
+  new_node -> left_child = left_child;
+  new_node -> right_child = right_child;
+  return new_node;
+}
+
+/*
+  Returns a new leave created from a varNode
+*/
+ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
+  if (var_data == NULL) {
+    printf("Cannot create leave from null var.\n");
+    return NULL;
+  }
+  else {
+    ASTNode * new_leave;
+    if (var_data -> is_defined)
+      new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
+    else
+      new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
+
+    new_leave -> data = var_data -> value;
+    new_leave -> node_type = _id;
+    new_leave -> is_boolean = var_data -> is_boolean;
+    new_leave -> var_data = var_data;
+    return new_leave;
+  }
+}
+
+/*
+  Returns a new leave created from a value.
+*/
+ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
+  ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
+  new_leave -> data = value;
+  new_leave -> is_boolean = is_boolean;
+  return new_leave;
 }
 
 /*
@@ -106,32 +143,6 @@ void open_enviroment() {
 }
 
 /*
-  Takes an int as parameter and returns the represented ReturnType.
-*/
-ReturnType get_return_type(int type_int_value) {
-  switch (type_int_value) {
-    case 0:
-      return _boolean;
-    case 1:
-      return _integer;
-    default:
-      return _void;
-  }
-}
-
-/*
-  Returns the string representation of a ReturnType enum.
-*/
-char * get_return_type_string(ReturnType value) {
-  switch (value)
-  {
-    case _boolean: return "bool";
-    case _integer: return "integer";
-    case _void: return "void";
-  }
-}
-
-/*
   Creates a new function Node and adds it to the function's list.
 */
 FunctionNode * add_function_to_funlist(int return_type, char * function_name, Parameter *parameters_list, ASTNode * body_head) {
@@ -178,43 +189,6 @@ Parameter * find_parameter(Parameter * param_list, char * param_name) {
     aux = aux -> next;
   }
   return NULL;
-}
-
-/*
-  Returns the corresponding node type depending of the operator.
-*/
-TypeNode get_node_type(int op) {
-  if (op == 'i')
-    return _if;
-  else if (op == '=')
-    return _assign;
-  else if (op == 'r')
-    return _return;
-  else if (op == 'm')
-    return _method_call;
-  else if (op == 'l')
-    return _literal;
-  else if (op == 'b')
-    return _if_body;
-  else if (op == 'w')
-    return _while;
-  else if (op == '+' || op == '-' || op == '*' || op == '/' || op == '%')
-    return _arith_op;
-  else if (op == '<' || op == '>' || op == 'e' || op == '&' || op == '|' || op == '!')
-    return _boolean_op;
-  else
-    return _id;
-}
-
-/*
-  Takes an operator and returns true if the operation results in a boolean value, false cc.
-*/
-bool is_boolean_operation(int op) {
-  if (op == '+' || op == '-' || op == '*' || op == '/' || op == '%')
-    return false;
-  else if (op == '<' || op == '>' || op == 'e' || op == '&' || op == '|' || op == '!')
-    return true;
-  return false;
 }
 
 /*
@@ -266,56 +240,6 @@ bool are_boolean_expressions(ASTNode * expr1, ASTNode * expr2) {
 */
 bool are_same_type_expressions(ASTNode * expr1, ASTNode * expr2) {
   return are_boolean_expressions(expr1,expr2) || are_integer_expressions(expr1,expr2);
-}
-
-/*
-  Returns a new ASTNode
-*/
-ASTNode * create_AST_node(ASTNode * left_child, char op, ASTNode * right_child) {
-  ASTNode * new_node = (ASTNode *) malloc(sizeof(ASTNode));
-  new_node -> data = op;
-  new_node -> is_boolean = is_boolean_operation(op);
-  new_node -> line_num = get_line_number();
-  new_node -> col_num = get_column_number();
-  new_node -> node_type = get_node_type(op);
-  new_node -> var_data = NULL;
-  new_node -> function_data = NULL;
-  new_node -> left_child = left_child;
-  new_node -> right_child = right_child;
-  return new_node;
-}
-
-/*
-  Returns a new leave created from a varNode
-*/
-ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
-  if (var_data == NULL) {
-    printf("Cannot create leave from null var.\n");
-    return NULL;
-  }
-  else {
-    ASTNode * new_leave;
-    if (var_data -> is_defined)
-      new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
-    else
-      new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
-
-    new_leave -> data = var_data -> value;
-    new_leave -> node_type = _id;
-    new_leave -> is_boolean = var_data -> is_boolean;
-    new_leave -> var_data = var_data;
-    return new_leave;
-  }
-}
-
-/*
-  Returns a new leave created from a value.
-*/
-ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
-  ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
-  new_leave -> data = value;
-  new_leave -> is_boolean = is_boolean;
-  return new_leave;
 }
 
 /*
@@ -525,83 +449,6 @@ ASTNode * add_statement_to_list(ASTNode * statement_list, ASTNode * new_statemen
     return statement_list;
   }
   return new_statement;
-}
-
-/*
-  Returns the string representation of the enum TypeNode
-*/
-char * get_type_node_string(TypeNode tn) {
-  switch (tn)
-  {
-    case _if: return "if";
-    case _if_body: return "if body";
-    case _while: return "while";
-    case _arith_op: return "arith op";
-    case _boolean_op: return "boolean op";
-    case _assign: return "assign";
-    case _method_call: return "method call";
-    case _return: return "return";
-    case _literal: return "literal";
-    case _id: return "id";
-  }
-}
-
-/*
-  Returns the string representation of an ASTNode.
-*/
-char * get_string_representation(ASTNode * node) {
-  char * aux;
-  switch (node -> node_type) {
-    case _if: return "if";
-    case _if_body: return "if body";
-    case _while: return "while";
-    case _arith_op: return (char *) &(node -> data);
-    case _boolean_op: return (char *) &(node -> data);
-    case _assign: return "=";
-    case _method_call:
-      if (node -> function_data != NULL) {
-        int fun_id_len = strlen(node -> function_data -> id);
-        if (fun_id_len <= 10) {
-          char str[12];
-          sprintf(str, "%s%s", node -> function_data -> id, "()");
-          char * ret = str;
-          return ret;
-        }
-        else {
-          char str[32];
-          sprintf(str, "%s%s", node -> function_data -> id, "()");
-          char * ret = str;
-          return ret;
-        }
-      }
-      else {
-        return "method_call";
-      }
-      break;
-    case _return: return "return";
-    case _id:
-      return node -> var_data -> id;
-    case _literal:
-      if (node -> is_boolean) {
-        if (node -> data == 0)
-          return "false";
-        else
-          return "true";
-      }
-      else {
-        if (node -> var_data == NULL) {
-          int i = node -> data;
-          char str[8];
-          sprintf(str, "%d", i);
-          char * ret = str;
-          return ret;
-        }
-        else {
-          return node -> var_data -> id;
-        }
-      }
-      break;
-  }
 }
 
 /*
@@ -820,13 +667,13 @@ bool check_functions_return_types() {
 
 prog: _PROGRAM_ scope_open prog_body scope_close
     {
-      print_functions();
-      generate_fun_code(fun_list_head);
-      print_instructions();
       if (!check_functions_return_types()) {
         yyerror(error_message);
         return -1;
       }
+      print_functions();
+      generate_fun_code(fun_list_head);
+      print_instructions();
     }
 ;
 
