@@ -667,13 +667,13 @@ bool check_functions_return_types() {
 
 prog: _PROGRAM_ scope_open prog_body scope_close
     {
-      print_functions();
-      generate_fun_code(fun_list_head);
-      print_instructions();
       if (!check_functions_return_types()) {
         yyerror(error_message);
         return -1;
       }
+      print_functions();
+      generate_fun_code(fun_list_head);
+      print_instructions();
     }
 ;
 
