@@ -16,6 +16,16 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
 }
 
 /*
+  Creates and returns a new VarNode created from a parameter.
+*/
+VarNode * create_varnode_from_param(Parameter * param) {
+  VarNode * new_varnode = create_VarNode(param -> id, param -> value, param -> is_boolean);
+  new_varnode -> is_defined = false;
+  new_varnode -> kind = _parameter;
+  return new_varnode;
+}
+ 
+/*
   Creates a new varnode
 */
 VarNode * create_var_node() {
@@ -97,6 +107,20 @@ char * get_temporal_string(VarNode * temp) {
   }
   return temp -> id;
 }
+
+/*
+  Returns the string representation of a var.
+*/
+// char * get_var_string(VarNode * var) {
+//   switch (var -> kind) {
+//     case 0:
+//       return _boolean;
+//     case 1:
+//       return _integer;
+//     default:
+//       return _void;
+//   }
+// }
 
 /*
   Given an isntruction node returns the string representation of the operation.
@@ -205,6 +229,20 @@ char * get_return_type_string(ReturnType value) {
     case _boolean: return "bool";
     case _integer: return "integer";
     case _void: return "void";
+  }
+}
+
+/*
+  Returns the string representation of a ReturnType enum.
+*/
+char * get_varnode_kind_string(VarNode * var) {
+  switch (var -> kind)
+  {
+    case _global: return "global";
+    case _local: return "local";
+    case _parameter: return "parameter";
+    case _temporal: return "temporal";
+    case _label: return "label";
   }
 }
 

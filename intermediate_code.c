@@ -123,7 +123,7 @@ void create_push_instructions(ASTNode * parameters) {
   ASTNode * aux = parameters;
   while (aux != NULL) {
     add_instruction(create_instructionNode(PUSH, create_instructions(aux) -> result, NULL, NULL));
-    aux = aux -> right_child; 
+    aux = aux -> next_statement; 
   }
 }
 
@@ -190,6 +190,13 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
 }
 
 /*
+  Prints VarNode information.
+*/
+void print_varnode(VarNode * var) {
+  printf("                                              %s  %s\n", var -> id, get_varnode_kind_string(var));
+}
+
+/*
   Prints a single instruction on cosole.
 */
 void print_instruction(InstructionNode * i) {
@@ -202,21 +209,30 @@ void print_instruction(InstructionNode * i) {
   switch (i -> operation) {
     case END_FUN:
       printf("\t%s   %s\n\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
     case LABEL:
       printf("%s\n", result_string);
+      print_varnode(i -> result);
       break;
     case BEGIN_FUN: case RETURN: case EXTERN:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
     case PUSH: case POP: case JMP: 
       printf("\t%s   %s\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
     case ASSIGN: case JE: case NEGAT: case CALL: 
       printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
+      print_varnode(i -> result);
+      print_varnode(i -> op1);
       break;
     case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
       printf("\t%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
+      print_varnode(i -> result);
+      print_varnode(i -> op1);
+      print_varnode(i -> op2);
       break;
     default:
       printf("\tUNKNOWN INSTRUCTION\n");

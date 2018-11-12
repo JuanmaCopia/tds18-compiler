@@ -74,6 +74,7 @@ typedef struct var_struct {
   bool is_boolean;
   bool is_defined;
   VarNodeKind kind;
+  int offset;
   struct var_struct *next;
 } VarNode;
 
@@ -94,6 +95,8 @@ typedef struct functions_struct {
   ReturnType type;
   Parameter *parameters;
   VarNode *enviroment;
+  bool is_extern;
+  int max_offset;
   struct ast_node_struct *body;
   struct functions_struct *next;
 } FunctionNode;
@@ -150,3 +153,5 @@ char * get_return_type_string(ReturnType value);
 char * get_type_node_string(TypeNode tn);
 char * get_string_representation(ASTNode * node);
 bool is_boolean_operation(int op);
+VarNode * create_varnode_from_param(Parameter * param);
+char * get_varnode_kind_string(VarNode * var);

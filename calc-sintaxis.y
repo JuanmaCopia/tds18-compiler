@@ -17,13 +17,12 @@ int get_column_number();
 extern VarNode * create_VarNode(char * id, int value, bool is_boolean);
 
 /*
-  Adds a new variable to the current enviroment of the symbol table.
+  Creates and adds a new variable to the current enviroment of the symbol table.
 */
 void add_var_to_symbol_table(char * var_id, int value, bool is_boolean) {
   VarNode * new_var = create_VarNode(var_id, value, is_boolean);
-  if (symbol_table -> variables != NULL) {
+  if (symbol_table -> variables != NULL)
     new_var -> next = symbol_table -> variables;
-  }
   symbol_table -> variables = new_var;
 }
 
@@ -172,13 +171,6 @@ VarNode * find_variable(VarNode * head, char * var_name) {
 }
 
 /*
-  Creates a VarNode from a parameter.
-*/
-VarNode * varnode_from_parameter(Parameter * param_data) {
-  return create_VarNode(param_data -> id, param_data -> value, param_data -> is_boolean);
-}
-
-/*
   Searches for a parameter on a list of parameters by id. if the parameter is found its returned, if not returns null
 */
 Parameter * find_parameter(Parameter * param_list, char * param_name) {
@@ -198,7 +190,7 @@ VarNode * find_variable_in_enviroments(char * var_name) {
   VarNode * result = NULL;
   Parameter * param_result = find_parameter(temporal_parameter, var_name);
   if (param_result != NULL)
-    return varnode_from_parameter(param_result);
+    return create_varnode_from_param(param_result);
   EnviromentNode * aux = symbol_table;
   while (result == NULL && aux != NULL) {
     result = find_variable(aux -> variables, var_name);
@@ -245,18 +237,18 @@ bool are_same_type_expressions(ASTNode * expr1, ASTNode * expr2) {
 /*
   Checks if two list of parameters are equals.
 */
-bool are_parameters_equals(Parameter * list1, Parameter * list2) {
-  Parameter * list1_aux = list1;
-  Parameter * list2_aux = list2;
-  while (list1_aux != NULL) {
-    if (list2_aux == NULL || list1_aux -> is_boolean != list2_aux -> is_boolean) {
+bool are_parameters_equals(Parameter * formal_params, ASTNode * actual_params) {
+  Parameter * formal_aux = formal_params;
+  ASTNode * actual_aux = actual_params;
+  while (formal_aux != NULL) {
+    if (actual_aux == NULL || formal_aux -> is_boolean != actual_aux -> is_boolean) {
       error_message = "Error: Parameters in function call doesnt match";
       return false;
     }
-    list1_aux = list1_aux -> next;
-    list2_aux = list2_aux -> next;
+    formal_aux = formal_aux -> next;
+    actual_aux = actual_aux -> next_statement;
   }
-  if (list2_aux != NULL) {
+  if (actual_aux != NULL) {
     error_message = "Error: Parameters in function call doesnt match";
     return false;
   }
@@ -266,7 +258,7 @@ bool are_parameters_equals(Parameter * list1, Parameter * list2) {
 /*
   Checks if a function can be called. That is: it must exist and the parameters should be the same.
 */
-bool is_callable(char * function_name, Parameter * params) {
+bool is_callable(char * function_name, ASTNode * params) {
   FunctionNode * functionAuxNode = fun_list_head;
   while (functionAuxNode != NULL) {
     if (strcmp(functionAuxNode -> id, function_name) == 0)
@@ -322,13 +314,17 @@ FunctionNode * find_function(char * function_name) {
   Sets a type to all variables of the list.
 */
 void set_types_to_var_list(int type, VarNode * var_list_head) {
-  VarNode * varAuxNode = var_list_head;
-  while (varAuxNode != NULL) {
-    if (type == 0)
-      varAuxNode -> is_boolean = true;
+  VarNode * aux = var_list_head;
+  while (aux != NULL) {
+    if (amount_open_enviroments == 1)
+      aux -> kind = _global;
     else
-      varAuxNode -> is_boolean = false;
-    varAuxNode = varAuxNode -> next;
+      aux -> kind = _local;
+    if (type == 0)
+      aux -> is_boolean = true;
+    else
+      aux -> is_boolean = false;
+    aux = aux -> next;
   }
 }
 
@@ -343,7 +339,7 @@ void add_varlist_to_enviroment(VarNode * var_list) {
 /*
   Creates a new ASTNode.
 */
-ASTNode * create_function_ASTnode(ASTNode * left_child, FunctionNode * function, ASTNode * right_child) {
+ASTNode * create_method_call_ASTnode(ASTNode * left_child, FunctionNode * function, ASTNode * right_child) {
   ASTNode * result = (ASTNode *) malloc(sizeof(ASTNode));
   result -> data = 'm';
   result -> is_boolean = function -> type == _boolean;
@@ -646,7 +642,7 @@ bool check_functions_return_types() {
 %type<varnode> vars_block
 %type<varnode> id_list
 %type<parameternode> params_def
-%type<parameternode> params_call
+%type<node> params_call
 %type<node> method_decl
 %type<node> main_decl
 %type<node> method_call
@@ -722,7 +718,7 @@ method_decl: type _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ code_block
     {
       FunctionNode * new_function = add_function_to_funlist($1, $2, $4, NULL);
     }
-  | type _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ code_block _EXTERN_
+  | type _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ _EXTERN_
     {
       FunctionNode * new_function = add_function_to_funlist($1, $2, NULL, NULL);
     }
@@ -869,14 +865,14 @@ conditional_statement: _IF_ _L_PARENTHESIS_ expr _R_PARENTHESIS_ _THEN_ code_blo
 
 params_call: expr
     {
-      $$ = create_argument_parameter($1);
+      $$ = $1;
     }
   | params_call _COMMA_ expr
     {
-      Parameter * aux = $1;
-      while (aux -> next != NULL)
-        aux = aux -> next;
-      aux -> next = create_argument_parameter($3);
+      ASTNode * aux = $1;
+      while (aux -> next_statement != NULL)
+        aux = aux -> next_statement;
+      aux -> next_statement = $3;
       $$ = $1;
     }
 ;
@@ -1047,7 +1043,7 @@ method_call: _ID_ _L_PARENTHESIS_ params_call _R_PARENTHESIS_
         yyerror(error_message);
         return -1;
       }
-      $$ = create_function_ASTnode(NULL, find_function($1), ast_from_parameters_list($3));
+      $$ = create_method_call_ASTnode(NULL, find_function($1), $3);
     }
   | _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_
     {
@@ -1055,7 +1051,7 @@ method_call: _ID_ _L_PARENTHESIS_ params_call _R_PARENTHESIS_
         yyerror(error_message);
         return -1;
       }
-      $$ = create_function_ASTnode(NULL, find_function($1), NULL);
+      $$ = create_method_call_ASTnode(NULL, find_function($1), NULL);
     }
 ;
 
