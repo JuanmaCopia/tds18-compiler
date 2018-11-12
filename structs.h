@@ -1,4 +1,40 @@
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#define PLUS '+'
+#define MINUS '-'
+#define PROD '*'
+#define DIV '/'
+#define MOD '%'
+
+#define ASSIGN '='
+#define EQUALS 'e'
+
+#define GREATER_THAN '>'
+#define LESSER_THAN '<'
+
+#define AND '&'
+#define OR '|'
+#define NOT '!'
+
+#define LABEL 'l'
+#define CALL 'c'
+#define BEGIN_FUN 'b' + 'f'
+#define END_FUN 'e' + 'f'
+#define PUSH 'p' + 'u'
+#define POP 'p' + 'o'
+
+#define JMP 'j'
+#define PSEUDO 'p'
+
+#define JMP 'j'
+#define JE  'j' + 'e'
+#define JNE 'j' + 'n' + 'e'
+#define CMP 'c' + 'm'
+#define RETURN 'r'
+#define NEGAT 'n' + 'g'
 
 // return types of functions
 typedef enum return_types {
@@ -21,11 +57,22 @@ typedef enum type_of_node {
   _literal
 } TypeNode;
 
+// return types of functions
+typedef enum varnode_kind {
+	_global,
+  _local,
+  _parameter,
+  _temporal,
+  _label
+} VarNodeKind;
+
 // Struct that holds variables data
 typedef struct var_struct {
   char *id;
   int value;
   bool is_boolean;
+  bool is_defined;
+  VarNodeKind kind;
   struct var_struct *next;
 } VarNode;
 
@@ -69,3 +116,36 @@ typedef struct enviroment_stack {
 	VarNode *variables;
 	struct enviroment_stack *next;
 } EnviromentNode;
+
+// Node of the intermidiate code list;
+typedef struct instruction_node {
+  int operation;
+  VarNode * op1;
+  VarNode * op2;
+  VarNode * result;
+  struct instruction_node * next;
+  struct instruction_node * back;
+} InstructionNode;
+
+
+int get_operation(ASTNode * node);
+VarNode * create_VarNode(char * id, int value, bool is_boolean);
+VarNode * create_var_node();
+VarNode * create_temporal();
+VarNode * create_temporal_with_value(int value, bool is_boolean);
+VarNode * create_temporal_with_id(char * id);
+InstructionNode * create_instructionNode(int operation, VarNode * result, VarNode * op1, VarNode * op2);
+InstructionNode * create_instruction_from_ASTNode(ASTNode * root);
+ASTNode * get_next_statement(ASTNode * statement);
+char * get_temporal_string(VarNode * temp);
+char * get_operation_string(InstructionNode * i);
+VarNode * get_var(ASTNode * node);
+InstructionNode * create_instruction(int operation);
+VarNode * create_label();
+VarNode * create_label_with_id(char * id);
+TypeNode get_node_type(int op);
+ReturnType get_return_type(int type_int_value);
+char * get_return_type_string(ReturnType value);
+char * get_type_node_string(TypeNode tn);
+char * get_string_representation(ASTNode * node);
+bool is_boolean_operation(int op);

@@ -2,5 +2,7 @@
 *.out
 *.h
 *.output
+*.o
 !structs.h
 !intermediate_code.c
+!structs.c
