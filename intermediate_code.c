@@ -106,7 +106,7 @@ void create_instructions_while(ASTNode * root) {
 }
 
 /*
-  Creates the needed instructions to compute a return statement
+  Creates the needed instructions to compute a return statement.
 */
 InstructionNode * create_instruction_return(ASTNode * root) {
   printf("encuentra un return \n");
@@ -127,6 +127,9 @@ void create_push_instructions(ASTNode * parameters) {
   }
 }
 
+/*
+  Creates the needed instructions to make a call to a method.
+*/
 InstructionNode * create_instructions_method_call(ASTNode * root) {
   printf("encuentra un method_call \n");
   create_push_instructions(root -> right_child);

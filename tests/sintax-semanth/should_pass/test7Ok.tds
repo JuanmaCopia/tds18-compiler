@@ -24,7 +24,7 @@ begin
     end
 
     // main function
-    void main()
+    integer main()
     begin
         integer y;
         y = -4 - 5;
