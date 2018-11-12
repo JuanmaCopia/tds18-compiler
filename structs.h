@@ -35,6 +35,7 @@
 #define CMP 'c' + 'm'
 #define RETURN 'r'
 #define NEGAT 'n' + 'g'
+#define EXTERN 'e' + 'x' + 't'
 
 // return types of functions
 typedef enum return_types {

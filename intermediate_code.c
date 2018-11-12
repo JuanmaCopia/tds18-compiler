@@ -138,6 +138,11 @@ InstructionNode * create_instructions_method_call(ASTNode * root) {
   return call_ins;
 }
 
+InstructionNode * create_extern_instruction(FunctionNode * fun) {
+  VarNode * fun_data = create_temporal_with_id(fun -> id);
+  return create_instructionNode(EXTERN, fun_data, NULL, NULL);
+}
+
 /*
   Creates and adds to the list the corresponding intermediate code instructions for an statement.
 */
@@ -201,7 +206,7 @@ void print_instruction(InstructionNode * i) {
     case LABEL:
       printf("%s\n", result_string);
       break;
-    case BEGIN_FUN: case RETURN:
+    case BEGIN_FUN: case RETURN: case EXTERN:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       break;
     case PUSH: case POP: case JMP: 
@@ -238,9 +243,14 @@ void print_instructions() {
 void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
-    add_instruction(create_instructionNode(BEGIN_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
-    generate_intermediate_code(aux -> body, aux -> id);
-    add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+    if (aux -> body == NULL) {
+      add_instruction(create_extern_instruction(aux));
+    }
+    else {
+      add_instruction(create_instructionNode(BEGIN_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+      generate_intermediate_code(aux -> body, aux -> id);
+      add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+    }
     aux = aux -> next;
   }
 }
