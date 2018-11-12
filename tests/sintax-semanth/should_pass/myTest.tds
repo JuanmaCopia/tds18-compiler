@@ -18,6 +18,13 @@ begin
             else begin
                 y = y-10;
             end
+            while (x > y) begin
+
+
+                x = x - 1;
+
+                
+            end
             return y+x;
         end
 end

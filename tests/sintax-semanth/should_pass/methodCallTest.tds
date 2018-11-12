@@ -1,0 +1,16 @@
+program
+begin
+    integer x;
+
+    void externfun() extern
+
+    void functionX(integer param)
+        begin
+            x = param;
+        end
+
+    void main()
+        begin
+            functionX(7);
+        end
+end

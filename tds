@@ -1,0 +1,6 @@
+if [ $# -eq 0 ]
+  then
+    echo "No program code supplied"
+  else
+    ./parser.out $1
+fi
