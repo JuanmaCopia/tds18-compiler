@@ -21,6 +21,7 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
 VarNode * create_varnode_from_param(Parameter * param) {
   VarNode * new_varnode = create_VarNode(param -> id, param -> value, param -> is_boolean);
   new_varnode -> is_defined = false;
+  new_varnode -> offset = param -> offset;
   new_varnode -> kind = _parameter;
   return new_varnode;
 }

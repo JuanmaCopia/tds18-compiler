@@ -126,6 +126,19 @@ void create_push_instructions(ASTNode * parameters) {
     aux = aux -> next_statement; 
   }
 }
+// void create_push_instructions(ASTNode * parameters) {
+//   printf("pushea parametros \n");
+//   reset_parameter_offset();
+//   VarNode * temporal = NULL;
+//   ASTNode * aux = parameters;
+//   while (aux != NULL) {
+//     temporal = create_instructions(aux) -> result;
+//     temporal -> offset = current_parameter_offset;
+//     increase_parameter_offset();
+//     add_instruction(create_instructionNode(PUSH, temporal, NULL, NULL));
+//     aux = aux -> next_statement; 
+//   }
+// }
 
 /*
   Creates the needed instructions to make a call to a method.
@@ -193,7 +206,14 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
   Prints VarNode information.
 */
 void print_varnode(VarNode * var) {
-  printf("                                              %s  %s\n", var -> id, get_varnode_kind_string(var));
+  switch (var -> kind) {
+    case _local: case _parameter:
+      printf("                                              %s  %s  offset: %d\n", var -> id, get_varnode_kind_string(var), var -> offset);
+      break;
+    default:
+      printf("                                              %s  %s\n", var -> id, get_varnode_kind_string(var));
+      break;
+  }
 }
 
 /*
@@ -259,6 +279,7 @@ void print_instructions() {
 void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
+    printf("FUNCION: %s   max_offset: %d\n\n", aux -> id, aux -> max_offset);
     if (aux -> body == NULL) {
       add_instruction(create_extern_instruction(aux));
     }

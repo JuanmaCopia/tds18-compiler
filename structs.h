@@ -83,6 +83,7 @@ typedef struct parameter_struct {
   char *id;
   int value; // is this really needed?
   bool is_boolean;
+  int offset;
   struct parameter_struct *next;
 } Parameter;
 

@@ -8,6 +8,8 @@ FunctionNode *fun_list_head = (FunctionNode *) NULL;    // List of all the funct
 
 int amount_open_enviroments = 0;                        // Quantity of currently open enviroments
 char * error_message;                                   // Stores an error message to disply
+int current_local_offset = -8;
+int current_parameter_offset = 16;
 
 void yyerror();
 int yylex();
@@ -15,6 +17,21 @@ int get_line_number();
 int get_column_number();
 
 extern VarNode * create_VarNode(char * id, int value, bool is_boolean);
+
+
+void increase_local_offset() {
+  current_local_offset = current_local_offset - 8;
+}
+
+void increase_parameter_offset() {
+  current_parameter_offset = current_parameter_offset + 8;
+}
+
+void reset_offsets() {
+  current_local_offset = -8;
+  current_parameter_offset = 16;
+}
+
 
 /*
   Creates and adds a new variable to the current enviroment of the symbol table.
@@ -57,7 +74,6 @@ ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
       new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
     else
       new_leave = (ASTNode *) create_AST_node(NULL,'n',NULL);
-
     new_leave -> data = var_data -> value;
     new_leave -> node_type = _id;
     new_leave -> is_boolean = var_data -> is_boolean;
@@ -79,8 +95,16 @@ ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
 /*
   Returns a new varNode with the ID taken as parameter.
 */
-VarNode * partial_varnode(char * var_id) {
-  return create_VarNode(var_id, 0, false);
+VarNode * create_var(char * var_id) {
+  VarNode * new_var = create_VarNode(var_id, 0, false);
+  if (amount_open_enviroments == 1)
+    new_var -> kind = _global;
+  else {
+    new_var -> kind = _local;
+    new_var -> offset = current_local_offset;
+    increase_local_offset();
+  }
+  return new_var;
 }
 
 /*
@@ -139,6 +163,7 @@ void open_enviroment() {
   new_level -> next = symbol_table;
   symbol_table = new_level;
   amount_open_enviroments++;
+  reset_offsets();
 }
 
 /*
@@ -152,6 +177,7 @@ FunctionNode * add_function_to_funlist(int return_type, char * function_name, Pa
   new_function -> enviroment = temporal_enviroment;
   new_function -> next = fun_list_head;
   new_function -> body = body_head;
+  new_function -> max_offset = current_local_offset + 8;
   fun_list_head = new_function;
   return new_function;
 }
@@ -190,7 +216,7 @@ VarNode * find_variable_in_enviroments(char * var_name) {
   VarNode * result = NULL;
   Parameter * param_result = find_parameter(temporal_parameter, var_name);
   if (param_result != NULL)
-    return create_varnode_from_param(param_result);
+    result = create_varnode_from_param(param_result);
   EnviromentNode * aux = symbol_table;
   while (result == NULL && aux != NULL) {
     result = find_variable(aux -> variables, var_name);
@@ -269,34 +295,6 @@ bool is_callable(char * function_name, ASTNode * params) {
   return false;
 }
 
-//Checked for Segmentation Fault by Santi.
-ASTNode * ast_from_parameters_list (Parameter * params_list) {
-  ASTNode * result = create_AST_node(NULL,'l',NULL);
-  Parameter * paramAuxNode = params_list;
-  if (paramAuxNode != NULL) {
-    if (paramAuxNode -> id != NULL) {
-      VarNode *var_data = find_variable_in_enviroments(paramAuxNode -> id);
-      result -> data = var_data -> value;
-      result -> is_boolean = var_data -> is_boolean;
-      result -> var_data = var_data;
-      result -> right_child = ast_from_parameters_list(params_list -> next);
-    }
-    else {
-      VarNode * var_data = (VarNode *) malloc(sizeof(VarNode));
-      var_data -> value = paramAuxNode -> value;
-      var_data -> is_boolean = paramAuxNode -> is_boolean;
-      var_data -> id = "temporal_var";
-      result -> data = paramAuxNode -> value;
-      result -> is_boolean = paramAuxNode -> is_boolean;
-      result -> var_data = var_data;
-      result -> right_child = ast_from_parameters_list(params_list -> next);
-    }
-    return result;
-  }
-  else
-    return NULL;
-}
-
 /*
   Finds a function by id in the function list and its returned (if its not found returns null).
 */
@@ -316,10 +314,6 @@ FunctionNode * find_function(char * function_name) {
 void set_types_to_var_list(int type, VarNode * var_list_head) {
   VarNode * aux = var_list_head;
   while (aux != NULL) {
-    if (amount_open_enviroments == 1)
-      aux -> kind = _global;
-    else
-      aux -> kind = _local;
     if (type == 0)
       aux -> is_boolean = true;
     else
@@ -378,6 +372,8 @@ Parameter * create_parameter(char * id, bool is_boolean) {
   Parameter * new_param = (Parameter *) malloc(sizeof(Parameter));
   new_param -> id = id;
   new_param -> is_boolean = is_boolean;
+  new_param -> offset = current_parameter_offset;
+  increase_parameter_offset();
   new_param -> next = NULL;
   return new_param;
 }
@@ -589,6 +585,15 @@ bool check_functions_return_types() {
     aux = aux -> next;
   }
   return no_errors_found;
+}
+
+void add_parameter_to_list(ASTNode * list, ASTNode * new_param) {
+  if (list != NULL) {
+    ASTNode * aux = list;
+    while (aux -> next_statement != NULL)
+      aux = aux -> next_statement;
+    aux -> next_statement = new_param;
+  }
 }
 
 %}
@@ -869,10 +874,7 @@ params_call: expr
     }
   | params_call _COMMA_ expr
     {
-      ASTNode * aux = $1;
-      while (aux -> next_statement != NULL)
-        aux = aux -> next_statement;
-      aux -> next_statement = $3;
+      add_parameter_to_list($1, $3);
       $$ = $1;
     }
 ;
@@ -1097,11 +1099,11 @@ vars_block: type id_list _SEMICOLON_
 
 id_list: _ID_
     {
-      $$ = partial_varnode($1);
+      $$ = create_var($1);
     }
   | id_list _COMMA_ _ID_
     {
-      $$ = concat_varnodes($$, partial_varnode($3));
+      $$ = concat_varnodes($$, create_var($3));
     }
 ;
 
