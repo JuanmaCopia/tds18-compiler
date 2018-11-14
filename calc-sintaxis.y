@@ -664,7 +664,7 @@ bool check_functions_return_types() {
 prog: _PROGRAM_ scope_open prog_body scope_close
     {
       if (!check_functions_return_types()) {
-        yyerror(error_message);
+        yyerror(error_message, get_line_number());
         return -1;
       }
       print_functions();
@@ -1040,7 +1040,7 @@ expr: _ID_
 method_call: _ID_ _L_PARENTHESIS_ params_call _R_PARENTHESIS_
     {
       if (!is_callable($1, $3)) {
-        yyerror(error_message);
+        yyerror(error_message, get_line_number());
         return -1;
       }
       $$ = create_method_call_ASTnode(NULL, find_function($1), $3);
@@ -1048,7 +1048,7 @@ method_call: _ID_ _L_PARENTHESIS_ params_call _R_PARENTHESIS_
   | _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_
     {
       if (!is_callable($1, NULL)) {
-        yyerror(error_message);
+        yyerror(error_message, get_line_number());
         return -1;
       }
       $$ = create_method_call_ASTnode(NULL, find_function($1), NULL);

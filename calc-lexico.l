@@ -33,7 +33,7 @@ COMPLEX [{|\n]
 %%
 
 program {
-	
+
 	return _PROGRAM_;
 }
 begin {
@@ -161,13 +161,13 @@ extern {
 	return _EXTERN_;
 }
 
-{digit}+ { 
+{digit}+ {
 	setyylloc();
 	yylval.i = atoi(yytext);
 	return _INT_;
 }
 
-{id} { 
+{id} {
 	setyylloc();
 	yylval.s=(char *) malloc(sizeof(yytext)*yyleng);
 	strcpy(yylval.s,yytext);
@@ -188,7 +188,7 @@ extern {
 
 {START}({SIMPLE}|{COMPLEX})*{END}
 
-. { 
+. {
 	printf(ANSI_COLOR_RED "error!\n" ANSI_COLOR_RESET, yylineno);
 	printf("\t" ANSI_COLOR_RED "'%s'" ANSI_COLOR_RESET " is not a valid / recognized input\n", yytext);
 	yyterminate();
@@ -196,12 +196,12 @@ extern {
 
 %%
 
-void yyerror(const char *str) {
-	fprintf(stderr,"Error | Line: %d\n%s\n",yylineno, str);
-}
+//void yyerror(const char *str) {
+//	fprintf(stderr,"Error | Line: %d\n%s\n",yylineno, str);
+//}
 
-void yyerror2(char *s, int line_number) {
-	fprintf(stderr, "line %d: %s\n", line_number, s);
+void yyerror(char *s, int line_number) {
+	fprintf(stderr, "Error | Line %d: %s\n", line_number, s);
 }
 
 int get_line_number() {
