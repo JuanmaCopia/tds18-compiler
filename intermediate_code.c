@@ -284,7 +284,9 @@ void generate_fun_code(FunctionNode * head) {
       add_instruction(create_extern_instruction(aux));
     }
     else {
-      add_instruction(create_instructionNode(BEGIN_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+      VarNode * fun_id_varnode = create_temporal_with_id(aux -> id);
+      fun_id_varnode -> offset = aux -> max_offset;
+      add_instruction(create_instructionNode(BEGIN_FUN, fun_id_varnode, NULL, NULL));
       generate_intermediate_code(aux -> body, aux -> id);
       add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
     }

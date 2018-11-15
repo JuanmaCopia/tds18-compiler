@@ -3,6 +3,10 @@ begin
 	void main()
 	begin
 		integer a;
+		integer b, c, d;
 		a = 7 + 5;
+		b = 5 * 7;
+		c = 9 - 3;
+		d = 9 / 3;
 	end
 end

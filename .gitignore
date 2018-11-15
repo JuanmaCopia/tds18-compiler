@@ -4,5 +4,7 @@
 *.output
 *.o
 !structs.h
-!intermediate_code.c
 !structs.c
+!intermediate_code.c
+!assembly_code.h
+!assembly_code.c
