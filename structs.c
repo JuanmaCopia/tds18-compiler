@@ -58,6 +58,7 @@ VarNode * create_temporal_with_value(int value, bool is_boolean) {
   new_node -> value = value;
   new_node -> is_boolean = is_boolean;
   new_node -> is_defined = true;
+  new_node -> kind = _constant;
   return new_node;
 }
 
@@ -244,6 +245,7 @@ char * get_varnode_kind_string(VarNode * var) {
     case _parameter: return "parameter";
     case _temporal: return "temporal";
     case _label: return "label";
+    case _constant: return "constant";
   }
 }
 

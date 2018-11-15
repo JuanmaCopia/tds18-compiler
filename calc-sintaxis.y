@@ -1,5 +1,6 @@
 %{
 #include "intermediate_code.c"
+#include "assembly_code.c"
 
 VarNode * temporal_enviroment;                          // Holds the last closed enviroment
 Parameter * temporal_parameter;                         // Holds the formal parameters of the current function
@@ -89,6 +90,7 @@ ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
   ASTNode * new_leave = (ASTNode *) create_AST_node(NULL,'l',NULL);
   new_leave -> data = value;
   new_leave -> is_boolean = is_boolean;
+  new_leave -> node_type = _literal;
   return new_leave;
 }
 
@@ -675,6 +677,7 @@ prog: _PROGRAM_ scope_open prog_body scope_close
       print_functions();
       generate_fun_code(fun_list_head);
       print_instructions();
+      create_assembly_file(head);
     }
 ;
 

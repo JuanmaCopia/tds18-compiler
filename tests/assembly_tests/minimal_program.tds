@@ -1,0 +1,8 @@
+program
+begin
+	void main()
+	begin
+		integer a;
+		a = 7 + 5;
+	end
+end
