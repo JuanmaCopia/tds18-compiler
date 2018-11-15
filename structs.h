@@ -136,8 +136,6 @@ typedef struct instruction_node {
 int get_operation(ASTNode * node);
 VarNode * create_VarNode(char * id, int value, bool is_boolean);
 VarNode * create_var_node();
-VarNode * create_temporal();
-VarNode * create_temporal_with_value(int value, bool is_boolean);
 VarNode * create_temporal_with_id(char * id);
 InstructionNode * create_instructionNode(int operation, VarNode * result, VarNode * op1, VarNode * op2);
 InstructionNode * create_instruction_from_ASTNode(ASTNode * root);

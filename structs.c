@@ -1,8 +1,6 @@
 #include "structs.h"
 
-int temp_quantity = 0;
 int label_quantity = 0;
-
 /*
   Creates and returns a new VarNode.
 */
@@ -33,31 +31,6 @@ VarNode * create_var_node() {
   VarNode * new_node = malloc(sizeof(VarNode));
   new_node -> is_defined = false;
   new_node -> next = NULL;
-  return new_node;
-}
-
-/*
-  Creates a new temporal.
-*/
-VarNode * create_temporal() {
-  char temp_name[128];
-  sprintf(temp_name, "t%d\0", temp_quantity);
-  char * res = malloc(strlen(temp_name));
-  sprintf(res, temp_name);
-  VarNode * new_node = create_var_node();
-  new_node -> id = res;
-  new_node -> kind = _temporal;
-  temp_quantity++;
-  return new_node;
-}
-/*
-  Creates a new temporal and sets its value and type.
-*/
-VarNode * create_temporal_with_value(int value, bool is_boolean) {
-  VarNode * new_node = create_temporal();
-  new_node -> value = value;
-  new_node -> is_boolean = is_boolean;
-  new_node -> is_defined = true;
   return new_node;
 }
 
