@@ -3,6 +3,6 @@ main:
 
 	movq $12 (%rbp)
 
-	movq (%rax) -64(%rbp)
+	movq -64(%rbp) (%rbp)
 
 (null)
