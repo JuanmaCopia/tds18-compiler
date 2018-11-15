@@ -5,4 +5,5 @@ main:
 
 	movq -64(%rbp) (%rbp)
 
-(null)
+	ret
+
