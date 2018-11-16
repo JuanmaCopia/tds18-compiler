@@ -1,6 +1,5 @@
 program
 begin
-    integer hola;
 
     integer plus(integer a, integer b)
         begin
@@ -10,12 +9,18 @@ begin
             return operator1 + operator2;
         end
 
-    void main(integer homero)
+    void main(integer h)
         begin
             integer x,y,z;
-            z = homero;
+            z = h;
             y = 32;
             x = 3;
             z = plus(6+3,y);
+            if (z < y) then begin
+                z = 0;
+            end
+            else begin
+                z = 1;
+            end
         end
 end

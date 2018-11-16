@@ -165,7 +165,6 @@ void open_enviroment() {
   new_level -> next = symbol_table;
   symbol_table = new_level;
   amount_open_enviroments++;
-  reset_offsets();
 }
 
 /*
@@ -181,6 +180,7 @@ FunctionNode * add_function_to_funlist(int return_type, char * function_name, Pa
   new_function -> body = body_head;
   new_function -> max_offset = current_local_offset + 8;
   fun_list_head = new_function;
+  reset_offsets();
   return new_function;
 }
 
@@ -480,7 +480,7 @@ void print_function_node(FunctionNode * function) {
   printf("\n");
   printf("%s %s",get_return_type_string(function -> type),function -> id);
   print_formal_parameters(function -> parameters);
-  printf("\n");
+  printf("Max offset: %d\n",function -> max_offset);
   printf("  Lines      TREE: \n");
   printf("\n");
   if (function -> body != NULL)
