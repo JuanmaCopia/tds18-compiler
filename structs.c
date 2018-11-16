@@ -217,7 +217,7 @@ char * get_varnode_kind_string(VarNode * var) {
     case _parameter: return "parameter";
     case _temporal: return "temporal";
     case _label: return "label";
-    case _constant: return "constant";
+    //case _constant: return "constant";
   }
 }
 

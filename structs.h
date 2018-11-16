@@ -65,7 +65,6 @@ typedef enum varnode_kind {
   _parameter,
   _temporal,
   _label,
-  _constant
 } VarNodeKind;
 
 // Struct that holds variables data

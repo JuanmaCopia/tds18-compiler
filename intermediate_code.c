@@ -238,7 +238,7 @@ void print_varnode(VarNode * var) {
       printf("                                              %s  %s  offset: %d    value: %s\n", var -> id, get_varnode_kind_string(var), var -> offset, get_temporal_string(var));
       break;
     case _label:
-      printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
+        printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
       break;
     default:
       printf(" ERROR, unknown varnode type \n");
@@ -260,7 +260,8 @@ void print_instruction(InstructionNode * i) {
     case BEGIN_FUN:
       printf("\n\n========================  START OF INSTRUCTIONS OF A NEW FUNCTION  ======================\n\n");
       printf("\t%s   %s", get_operation_string(i), result_string);
-      print_varnode(i -> result);
+      //print_varnode(i -> result);
+      printf("                          %s  %s   max_offset: %d\n", i -> result -> id, get_varnode_kind_string(i -> result), i -> result -> offset);
       printf("\n\n");
       break;
     case END_FUN:
@@ -324,17 +325,20 @@ void print_instructions() {
 void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
+    InstructionNode * begin_ins = NULL;
     max_offset_current_function = aux -> max_offset;
     printf("FUNCION: %s   max_offset without temporals: %d\n", aux -> id, aux -> max_offset);
     if (aux -> body == NULL) {
       add_instruction(create_extern_instruction(aux));
     }
     else {
-      add_instruction(create_instructionNode(BEGIN_FUN, create_label_with_id(aux -> id), NULL, NULL));
+      begin_ins = create_instructionNode(BEGIN_FUN, create_label_with_id(aux -> id), NULL, NULL);
+      add_instruction(begin_ins);
       generate_intermediate_code(aux -> body, aux -> id);
       add_instruction(create_instructionNode(END_FUN, create_label_with_id(aux -> id), NULL, NULL));
     }
     aux -> max_offset = max_offset_current_function;
+    begin_ins -> result -> offset = max_offset_current_function;
     printf("FUNCION: %s   Final max_offset: %d \n\n", aux -> id, aux -> max_offset);
     aux = aux -> next;
   }
