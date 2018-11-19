@@ -2,7 +2,9 @@ program
 begin
 	void main()
 	begin
-		integer a;
-		a = 7 + 5;
+		bool a,b,c;
+		b = true;
+		c = false;
+		a = b || c;
 	end
 end

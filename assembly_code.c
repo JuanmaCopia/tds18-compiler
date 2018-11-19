@@ -11,13 +11,8 @@ void finalize() {
 void create_assembly_file(InstructionNode * ins) {
 	if (assembly_file == NULL)
 		initialize();
-
-	if (ins != NULL) {
-		//print_instruction(ins);
-		//fprintf(assembly_file, "%s\n", generate_assembly_code(ins));
+	if (ins != NULL)
 		generate_assembly_code(ins);
-	}
-
 	if (ins -> next == NULL)
 		finalize();
 	else
@@ -28,16 +23,26 @@ void generate_assembly_code(InstructionNode * ins) {
 	if (ins != NULL)
 		switch (ins -> operation) {
 			case PLUS:
-				generate_assembly_plus(ins);
+				generate_assembly_operation(ins, ADD);
 				break;
 			case MINUS:
-				//return generate_assembly_minus(ins);
+				generate_assembly_operation(ins, SUB);
 				break;
 			case PROD:
-				//return generate_assembly_prod(ins);
+				generate_assembly_operation(ins, IMUL);
 				break;
 			case DIV:
-				//return generate_assembly_div(ins);
+				generate_assembly_operation(ins, IDIV);
+				break;
+			case AND:
+				generate_assembly_and(ins);
+				break;
+			case OR:
+				generate_assembly_or(ins);
+				break;
+			case GREATER_THAN:
+				break;
+			case LESSER_THAN:
 				break;
 			case MOD:
 				//return generate_assembly_mod(ins);
@@ -49,78 +54,102 @@ void generate_assembly_code(InstructionNode * ins) {
 				//return generate_assembly_end_fun(ins);
 				break;
 			case ASSIGN:
-				generate_assembly_assign(ins);
+				generate_assembly_assign(ins); 
 				break;
 		}
 } 
 
-void generate_assembly_plus(InstructionNode * ins) {
-	create_movq_to_reg(ins -> op1 -> offset, RAX);
-	create_movq_to_reg(ins -> op2 -> offset, RDX);
-	create_add_reg_to_reg(RDX, RAX);
-	create_movq_reg_to_stack(RAX, ins -> result -> offset);
+void generate_assembly_operation(InstructionNode * ins, char * operation_string) {
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RDX);
+	create_instruction_reg_to_reg(operation_string, RDX, RAX);
+	create_instruction_reg_to_stack(MOVQ, RAX, ins -> result -> offset);
 }
 
-void create_movq_reg_to_stack(char * reg, int dest_offset) {
-	char * ins = malloc(12*sizeof(char));
-	sprintf(ins, "\tmovq %s %d(%rbp)", reg, dest_offset);
-	fprintf(assembly_file, "%s\n", ins);
+void generate_assembly_and(InstructionNode * ins) {
+	char * label_false = ".false_label";
+	char * label_true = ".true_label";
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RDX);
+	create_instruction_constant_to_reg(COMP, 0, RDX);
+	create_instruction_jump(JUMPE, label_false);
+	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RDX);
+	create_instruction_constant_to_reg(COMP, 0, RDX);
+	create_instruction_jump(JUMPE, label_false);
+	create_instruction_jump(JUMP, label_true);
+	create_assembly_label(label_false);
+	create_instruction_constant_to_stack(MOVQ, 0, ins -> result -> offset);
+	create_assembly_label(label_true);
+	create_instruction_constant_to_stack(MOVQ, 1, ins -> result -> offset);
 }
 
-void create_add_reg_to_reg(char * reg, char * dest_reg) {
-	char * ins = malloc(12*sizeof(char));
-	sprintf(ins, "\tadd %s %s", reg, dest_reg);
-	fprintf(assembly_file, "%s\n", ins);
+void generate_assembly_or(InstructionNode * ins) {
+	char * label_false = ".false_label";
+	char * label_true = ".true_label";
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RDX);
+	create_instruction_reg_to_reg(ADD, RDX, RAX);
+	create_instruction_constant_to_reg(COMP, 0, RAX);
+	create_instruction_jump(JUMPE, label_false);
+	create_instruction_jump(JUMP, label_true);
+	create_assembly_label(label_false);
+	create_instruction_constant_to_stack(MOVQ, 0, ins -> result -> offset);
+	create_assembly_label(label_true);
+	create_instruction_constant_to_stack(MOVQ, 1, ins -> result -> offset);
+}
+
+void generate_assembly_assign(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	create_instruction_stack_to_stack("movq ", ins -> op1 -> offset, ins -> result -> offset);
 }
 
 void generate_assembly_begin_fun(InstructionNode * ins) {
-	char * res = malloc(24*sizeof(char));
 	if (ins -> result -> id == "main")
 		fprintf(assembly_file, "	.globl main\n");
-	sprintf(res, "%s", create_assembly_label(ins -> result -> id));
-	sprintf(res, "%s\tenter", res);
-	sprintf(res, "%s $(%d), $0", res, ins -> result -> offset * -1);
-	fprintf(assembly_file, "%s\n", res);
-}
-
-// char * generate_assembly_end_fun(InstructionNode * ins) {
-// 	return create_assembly_ret();
-// }
-
-void generate_assembly_assign(InstructionNode * ins) {
-	create_movq_stack(ins -> op1 -> offset, ins -> result -> offset);
-}
-
-// char * create_constant_movq(int val, int offset_val, char * reg) {
-// 	char * ins = malloc(12*sizeof(char));
-// 	sprintf(ins, "\tmovq $");
-// 	sprintf(ins, "%s%d ", ins, val);
-// 	if (offset_val != 0)
-// 		sprintf(ins, "%s%d", ins, offset_val);
-// 	sprintf(ins, "%s%s", ins, reg);
-// 	//sprintf(ins, "%s\n", ins);
-// 	return ins;
-// }
-
-void create_movq_stack(int src_offset, int dest_offset) {
-	char * ins = malloc(12*sizeof(char));
-	sprintf(ins, "\tmovq %d(%rbp) %d(%rbp)", src_offset, dest_offset);
-	fprintf(assembly_file, "%s\n", ins);
-}
-
-void create_movq_to_reg(int src_offset, char * reg) {
-	char * ins = malloc(12*sizeof(char));
-	sprintf(ins, "\tmovq %d(%rbp) %s", src_offset, reg);
-	fprintf(assembly_file, "%s\n", ins);
+	create_assembly_label(ins -> result -> id);
+	fprintf(assembly_file, "\tenter\t$(%d), $0\n", ins -> result -> offset * -1);
 }
 
 char * create_assembly_label(char * id) {
-	char * ins = malloc(12*sizeof(char));
-	sprintf(ins, "%s:\n", id);
-	return ins;
+	fprintf(assembly_file, "%s:\n", id);
 }
 
-// char * create_assembly_ret() {
-// 	char * ins = malloc(12*sizeof(char));
-// 	sprintf(ins, "\tret\n");
-// }
+void create_instruction_reg_to_reg(char * instruction, char * reg1, char * reg2) {
+	fprintf(assembly_file, "\t%s\t%s, %s \n", instruction, reg1, reg2);
+}
+
+void create_instruction_stack_to_reg(char * instruction, int offset, char * reg) {
+	fprintf(assembly_file, "\t%s\t%d(%rbp), %s \n", instruction, offset, reg);
+}
+
+void create_instruction_reg_to_stack(char * instruction, char * reg1, int offset) {
+	fprintf(assembly_file, "\t%s\t%s, %d(%rbp) \n", instruction, reg1, offset);
+}
+
+void create_instruction_stack_to_stack(char * instruction, int offset1, int offset2) {
+	fprintf(assembly_file, "\t%s\t%d(%rbp), %d(%rbp) \n", instruction, offset1, offset2);
+}
+
+void create_instruction_constant_to_stack(char * instruction, int constant, int offset) {
+	fprintf(assembly_file, "\t%s\t$%d, %d(%rbp) \n", instruction, constant, offset);
+}
+
+void create_instruction_constant_to_reg(char * instruction, int constant, char * reg) {
+	fprintf(assembly_file, "\t%s\t$%d, %s \n", instruction, constant, reg);
+}
+
+void create_instruction_jump(char * instruction, char * label) {
+	fprintf(assembly_file, "\t%s\t%s \n", instruction, label);
+}
