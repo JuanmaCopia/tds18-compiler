@@ -155,10 +155,22 @@ InstructionNode * create_instruction_return(ASTNode * root) {
   Creates the needed instructions to make a push instruction.
 */
 void create_push_instructions(ASTNode * parameters) {
-  //printf("pushea parametros \n");
+  //printf("pushea parametro \n");
   ASTNode * aux = parameters;
   while (aux != NULL) {
     add_instruction(create_instructionNode(PUSH, create_instructions(aux) -> result, NULL, NULL));
+    aux = aux -> next_statement; 
+  }
+}
+
+/*
+  Creates the needed instructions to make a push instruction.
+*/
+void create_pop_instructions(ASTNode * parameters) {
+  //printf("popea parametro \n");
+  ASTNode * aux = parameters;
+  while (aux != NULL) {
+    add_instruction(create_instructionNode(POP, NULL , NULL, NULL));
     aux = aux -> next_statement; 
   }
 }
@@ -171,6 +183,7 @@ InstructionNode * create_instructions_method_call(ASTNode * root) {
   create_push_instructions(root -> right_child);
   InstructionNode * call_ins = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
   add_instruction(call_ins);
+  create_pop_instructions(root -> right_child);
   return call_ins;
 }
 
@@ -276,7 +289,7 @@ void print_instruction(InstructionNode * i) {
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
-    case PUSH: case POP:
+    case PUSH:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
@@ -299,6 +312,9 @@ void print_instruction(InstructionNode * i) {
       printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
       //print_varnode(i -> result);
       print_varnode(i -> op1);
+      break;
+    case POP:
+      printf("\t%s\n\n", get_operation_string(i));
       break;
     default:
       printf("\tUNKNOWN INSTRUCTION\n");

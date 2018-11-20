@@ -17,7 +17,6 @@
 
 #define AND '&'
 #define OR '|'
-#define NOT '!'
 
 #define LABEL 'l'
 #define CALL 'c'
@@ -26,7 +25,6 @@
 #define PUSH 'p' + 'u'
 #define POP 'p' + 'o'
 
-#define JMP 'j'
 #define PSEUDO 'p'
 
 #define JMP 'j'

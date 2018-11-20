@@ -1,10 +1,14 @@
 program
 begin
+
+	bool myfunc(integer num) 
+	begin
+		return true;
+	end
+
 	void main()
 	begin
-		bool a,b,c;
-		b = true;
-		c = false;
-		a = b || c;
+		bool result;
+		result = myfunc(5);
 	end
 end

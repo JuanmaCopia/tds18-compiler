@@ -32,8 +32,11 @@ void generate_assembly_code(InstructionNode * ins) {
 				generate_assembly_operation(ins, IMUL);
 				break;
 			case DIV:
-				generate_assembly_operation(ins, IDIV);
+				generate_assembly_div(ins, RAX);
 				break;
+      case EQUALS:
+        generate_assembly_bool_operation(ins, SETE);
+        break;
 			case AND:
 				generate_assembly_and(ins);
 				break;
@@ -41,23 +44,67 @@ void generate_assembly_code(InstructionNode * ins) {
 				generate_assembly_or(ins);
 				break;
 			case GREATER_THAN:
+				generate_assembly_bool_operation(ins, SETG);
 				break;
 			case LESSER_THAN:
+				generate_assembly_bool_operation(ins, SETL);
 				break;
 			case MOD:
-				//return generate_assembly_mod(ins);
+				generate_assembly_div(ins, RDX);
 				break;
 			case BEGIN_FUN:
 				generate_assembly_begin_fun(ins);
 				break;
 			case END_FUN:
-				//return generate_assembly_end_fun(ins);
+				generate_assembly_end_fun(ins);
 				break;
 			case ASSIGN:
 				generate_assembly_assign(ins); 
 				break;
+      case LABEL:
+        create_assembly_label(ins -> result -> id);
+        break;
+      case JMP:
+        create_instruction_jump(JUMP, ins -> result -> id);
+        break;
+      case JE:
+        create_instruction_jump(JUMPE, ins -> result -> id);
+        break;
+      case JNE:
+        create_instruction_jump(JUMPNE, ins -> result -> id);
+        break;
+      case CMP:
+        generate_assembly_compare(ins);
+        break;
+      case PUSH:
+        generate_assembly_push(ins);
+        break;
+      case POP:
+        create_instruction_1reg(POP_, RCX);
+        break;
+      case CALL:
+        create_instruction_string(CALL_, ins -> op1 -> id);
+        create_instruction_reg_to_stack(MOVQ, RAX, ins -> result -> offset);
+        break;
+      case RETURN:
+        generate_assembly_return(ins);
+        break;
+      case NEGAT:
+        break;
+      case EXTERN:
+        break;
 		}
 } 
+
+void generate_assembly_compare(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RDX);
+	create_instruction_reg_to_reg(COMP, RDX, RAX);
+}
 
 void generate_assembly_operation(InstructionNode * ins, char * operation_string) {
 	if (ins -> op1 -> is_defined)
@@ -69,6 +116,30 @@ void generate_assembly_operation(InstructionNode * ins, char * operation_string)
 	create_instruction_reg_to_reg(operation_string, RDX, RAX);
 	create_instruction_reg_to_stack(MOVQ, RAX, ins -> result -> offset);
 }
+
+void generate_assembly_bool_operation(InstructionNode * ins, char * operation_string) {
+  if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_stack_to_reg(COMP, ins -> op2 -> offset, RAX);
+	create_instruction_1reg(operation_string, RAX);
+	create_instruction_reg_to_stack(MOVQ, RAX, ins -> result -> offset);
+}
+
+void generate_assembly_div(InstructionNode * ins, char * reg) {
+	if (ins -> op1 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
+	if (ins -> op2 -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
+	create_instruction_constant_to_reg(MOVQ, 0, RAX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RDX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RBX);
+	create_instruction_1reg(IDIV, RBX);
+	create_instruction_reg_to_stack(MOVQ, reg, ins -> result -> offset);
+}
+
 
 void generate_assembly_and(InstructionNode * ins) {
 	char * label_false = ".false_label";
@@ -115,11 +186,29 @@ void generate_assembly_assign(InstructionNode * ins) {
 	create_instruction_stack_to_stack("movq ", ins -> op1 -> offset, ins -> result -> offset);
 }
 
+void generate_assembly_push(InstructionNode * ins) {
+	if (ins -> result -> is_defined)
+    create_instruction_push_const(ins -> result -> value);
+  else
+	  create_instruction_1stack(PUSH_, ins -> result -> offset);
+}
+
+void generate_assembly_return(InstructionNode * ins) {
+	if (ins -> result -> is_defined)
+    create_instruction_constant_to_reg(MOVQ, ins -> result -> value, RAX);
+  else
+	  create_instruction_stack_to_reg(MOVQ, ins -> result -> offset, RAX);
+}
+
 void generate_assembly_begin_fun(InstructionNode * ins) {
 	if (ins -> result -> id == "main")
 		fprintf(assembly_file, "	.globl main\n");
 	create_assembly_label(ins -> result -> id);
 	fprintf(assembly_file, "\tenter\t$(%d), $0\n", ins -> result -> offset * -1);
+}
+
+void generate_assembly_end_fun(InstructionNode * ins) {
+	fprintf(assembly_file, "\tleave\n\tret\n", ins -> result -> offset * -1);
 }
 
 char * create_assembly_label(char * id) {
@@ -152,4 +241,24 @@ void create_instruction_constant_to_reg(char * instruction, int constant, char *
 
 void create_instruction_jump(char * instruction, char * label) {
 	fprintf(assembly_file, "\t%s\t%s \n", instruction, label);
+}
+
+void create_instruction_1reg(char * instruction, char * reg) {
+	fprintf(assembly_file, "\t%s\t%s \n", instruction, reg);
+}
+
+void create_instruction_string(char * instruction, char * str) {
+	fprintf(assembly_file, "\t%s\t%s \n", instruction, str);
+}
+
+void create_instruction_1stack(char * instruction, int offset) {
+	fprintf(assembly_file, "\t%s\t%d(%rbp) \n", instruction, offset);
+}
+
+void create_instruction_1const(char * instruction, int constant) {
+	fprintf(assembly_file, "\t%s\t%d \n", instruction, constant);
+}
+
+void create_instruction_push_const(int constant) {
+	fprintf(assembly_file, "\t%s\t$%d \n", PUSH_, constant);
 }
