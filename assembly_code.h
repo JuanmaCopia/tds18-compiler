@@ -6,6 +6,7 @@
 #define RCX "%rcx"
 #define RDX "%rdx"
 #define AL  "%al"
+#define DL	"%dl"
 
 #define MOVQ "movq "
 #define ADD "add  "

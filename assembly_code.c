@@ -123,8 +123,10 @@ void generate_assembly_bool_operation(InstructionNode * ins, char * operation_st
 	if (ins -> op2 -> is_defined)
 		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
 	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_constant_to_reg(MOVQ, 0, RDX);
 	create_instruction_stack_to_reg(COMP, ins -> op2 -> offset, RAX);
-	create_instruction_1reg(operation_string, RAX);
+	create_instruction_1reg(operation_string, DL);
+	create_instruction_reg_to_reg(MOVQ, RDX, RAX);
 	create_instruction_reg_to_stack(MOVQ, RAX, ins -> result -> offset);
 }
 
