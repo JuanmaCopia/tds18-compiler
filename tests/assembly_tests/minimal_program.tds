@@ -9,6 +9,9 @@ begin
 	void main()
 	begin
 		bool result;
-		result = myfunc(5);
+		integer a, b;
+		a = 2;
+		b = 0;
+		result = true || false;
 	end
 end

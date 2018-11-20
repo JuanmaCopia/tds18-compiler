@@ -31,6 +31,7 @@ void finalize();
 void create_assembly_file(InstructionNode * ins);
 void generate_assembly_code(InstructionNode * ins);
 char * create_assembly_label(char * id);
+char * create_asmlabel();
 
 void create_instruction_reg_to_reg(char * instruction, char * reg1, char * reg2);
 void create_instruction_stack_to_reg(char * instruction, int offset, char * reg);
