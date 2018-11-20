@@ -228,7 +228,13 @@ void create_instruction_reg_to_stack(char * instruction, char * reg1, int offset
 }
 
 void create_instruction_stack_to_stack(char * instruction, int offset1, int offset2) {
-	fprintf(assembly_file, "\t%s\t%d(%rbp), %d(%rbp) \n", instruction, offset1, offset2);
+	if (strcmp(instruction, MOVQ) == 0) {
+		fprintf(assembly_file, "\t%s\t%d(%rbp), %r10\n", instruction, offset1);
+		fprintf(assembly_file, "\t%s\t%r10, %d(%rbp)\n", instruction, offset2);
+	}
+	else {
+		fprintf(assembly_file, "\t%s\t%d(%rbp), %d(%rbp) \n", instruction, offset1, offset2);
+	}
 }
 
 void create_instruction_constant_to_stack(char * instruction, int constant, int offset) {
