@@ -5,12 +5,8 @@ begin
 
 	void main()
 	begin
-		integer a, b;
-		a = 2;
-		b = 0;
-		while (a < b) begin
-			b = b + 1;
-		end
-		print(10);
+		integer result;
+		result = 15 / 3;
+		print(result);
 	end
 end

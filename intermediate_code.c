@@ -396,9 +396,6 @@ void generate_fun_code(FunctionNode * head) {
       aux -> max_offset = max_offset_current_function;
       begin_ins -> result -> offset = max_offset_current_function;
     }
-    else {
-      add_instruction(create_extern_instruction(aux));
-    }
     printf("FUNCION: %s   Final max_offset: %d \n\n", aux -> id, aux -> max_offset);
     aux = aux -> next;
   }
