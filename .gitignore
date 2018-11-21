@@ -3,6 +3,8 @@
 *.h
 *.output
 *.o
+*.s
+*.exe
 !structs.h
 !structs.c
 !intermediate_code.c
