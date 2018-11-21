@@ -3,4 +3,6 @@ if [ $# -eq 0 ]
     echo "No program code supplied"
   else
     ./parser.out $1
+    gcc -o executable assembly.s externs.c
+    ./executable
 fi

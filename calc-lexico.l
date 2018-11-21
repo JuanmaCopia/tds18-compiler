@@ -76,10 +76,6 @@ bool {
 	setyylloc();
 	return _BOOL_;
 }
-print {
-	setyylloc();
-	return _PRINT_;
-}
 true {
 	setyylloc();
 	return _TRUE_;

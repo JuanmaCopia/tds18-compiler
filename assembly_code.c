@@ -3,7 +3,9 @@
 int label_amount = 0;
 
 void initialize() {
-	assembly_file = fopen("assembly_code.s" ,"w");
+	assembly_file = fopen("assembly.s" ,"w");
+	if (assembly_file == NULL)
+		assembly_file = fopen("assembly.s", "wb");
 }
 
 void finalize() {
