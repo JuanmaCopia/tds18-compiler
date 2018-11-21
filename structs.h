@@ -35,6 +35,13 @@
 #define NEGAT 'n' + 'g'
 #define EXTERN 'e' + 'x' + 't'
 
+#define PUSH1 'P'
+#define PUSH2 'P' + 1
+#define PUSH3 'P' + 2
+#define PUSH4 'P' + 3
+#define PUSH5 'P' + 4
+#define PUSH6 'P' + 5
+
 // return types of functions
 typedef enum return_types {
 	_boolean,
@@ -93,6 +100,7 @@ typedef struct functions_struct {
   char *id;
   ReturnType type;
   Parameter *parameters;
+  int param_amount;
   VarNode *enviroment;
   bool is_extern;
   int max_offset;

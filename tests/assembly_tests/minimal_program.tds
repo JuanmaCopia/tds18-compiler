@@ -8,10 +8,11 @@ begin
 
 	void main()
 	begin
-		bool result;
 		integer a, b;
 		a = 2;
 		b = 0;
-		result = true || false;
+		while (a < b) begin
+			b = b + 1;
+		end
 	end
 end

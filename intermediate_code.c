@@ -164,7 +164,7 @@ void create_push_instructions(ASTNode * parameters) {
 }
 
 /*
-  Creates the needed instructions to make a push instruction.
+  Creates a pop instruction for each parameter.
 */
 void create_pop_instructions(ASTNode * parameters) {
   //printf("popea parametro \n");
@@ -176,15 +176,59 @@ void create_pop_instructions(ASTNode * parameters) {
 }
 
 /*
+  Creates the needed instructions to make a push instruction.
+*/
+void create_extern_push_instructions(ASTNode * parameters, int param_amount) {
+  //printf("pushea parametro \n");
+  int counter = 0;
+  ASTNode * aux = parameters;
+  while (aux != NULL && counter < 6) {
+    add_instruction(create_instructionNode(PUSH1 + counter, create_instructions(aux) -> result, NULL, NULL));
+    aux = aux -> next_statement; 
+    counter++;
+  }
+  if (param_amount > 6)
+    create_push_instructions(aux);
+}
+
+/*
+  Creates a pop instruction for each parameter.
+*/
+void create_extern_pop_instructions(ASTNode * parameters, int param_amount) {
+  //printf("popea parametro \n");
+  int counter = 0;
+  if (param_amount > 6) {
+    ASTNode * aux = parameters;
+    while (aux != NULL && counter < 6) {
+      aux = aux -> next_statement;
+      counter++;
+    }
+    while (aux != NULL) {
+      add_instruction(create_instructionNode(POP, NULL , NULL, NULL));
+      aux = aux -> next_statement; 
+    }
+  }
+}
+
+/*
   Creates the needed instructions to make a call to a method.
 */
 InstructionNode * create_instructions_method_call(ASTNode * root) {
   //printf("encuentra un method_call \n");
-  create_push_instructions(root -> right_child);
-  InstructionNode * call_ins = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
-  add_instruction(call_ins);
-  create_pop_instructions(root -> right_child);
-  return call_ins;
+  InstructionNode * call;
+  if (root -> function_data -> is_extern) {
+    create_extern_push_instructions(root -> right_child, root -> function_data -> param_amount);
+    call = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
+    add_instruction(call);
+    create_extern_pop_instructions(root -> right_child, root -> function_data -> param_amount);
+  }
+  else {
+    create_push_instructions(root -> right_child);
+    call = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
+    add_instruction(call);
+    create_pop_instructions(root -> right_child);
+  }
+  return call;
 }
 
 // is needed?
@@ -278,7 +322,7 @@ void print_instruction(InstructionNode * i) {
       printf("\n\n");
       break;
     case END_FUN:
-      printf("\t%s   %s", get_operation_string(i), result_string);
+      printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
     case LABEL:
@@ -289,7 +333,7 @@ void print_instruction(InstructionNode * i) {
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
-    case PUSH:
+    case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
@@ -344,17 +388,17 @@ void generate_fun_code(FunctionNode * head) {
     InstructionNode * begin_ins = NULL;
     max_offset_current_function = aux -> max_offset;
     printf("FUNCION: %s   max_offset without temporals: %d\n", aux -> id, aux -> max_offset);
-    if (aux -> body == NULL) {
-      add_instruction(create_extern_instruction(aux));
-    }
-    else {
+    if (!aux -> is_extern) {
       begin_ins = create_instructionNode(BEGIN_FUN, create_label_with_id(aux -> id), NULL, NULL);
       add_instruction(begin_ins);
       generate_intermediate_code(aux -> body, aux -> id);
       add_instruction(create_instructionNode(END_FUN, create_label_with_id(aux -> id), NULL, NULL));
+      aux -> max_offset = max_offset_current_function;
+      begin_ins -> result -> offset = max_offset_current_function;
     }
-    aux -> max_offset = max_offset_current_function;
-    begin_ins -> result -> offset = max_offset_current_function;
+    else {
+      add_instruction(create_extern_instruction(aux));
+    }
     printf("FUNCION: %s   Final max_offset: %d \n\n", aux -> id, aux -> max_offset);
     aux = aux -> next;
   }

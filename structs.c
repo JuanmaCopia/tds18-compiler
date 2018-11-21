@@ -112,6 +112,12 @@ char * get_operation_string(InstructionNode * i) {
     case CALL:          return "CALL ";
     case END_FUN:       return "ENDF ";
     case PUSH:          return "PUSH ";
+    case PUSH1:         return "PUSH1";
+    case PUSH2:         return "PUSH2";
+    case PUSH3:         return "PUSH3";
+    case PUSH4:         return "PUSH4";
+    case PUSH5:         return "PUSH5";
+    case PUSH6:         return "PUSH6";
     case POP:           return "POP  ";
     case GREATER_THAN:  return "GRETR";
     case LESSER_THAN:   return "LESSR";

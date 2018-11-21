@@ -167,6 +167,17 @@ void open_enviroment() {
   amount_open_enviroments++;
 }
 
+int count_parameters(Parameter * list) {
+  int amount = 0;
+  Parameter * aux = list;
+  while (aux != NULL) {
+    amount++;
+    aux = aux -> next;
+  }
+  return amount;
+}
+
+
 /*
   Creates a new function Node and adds it to the function's list.
 */
@@ -175,8 +186,11 @@ FunctionNode * add_function_to_funlist(int return_type, char * function_name, Pa
   new_function -> id = function_name;
   new_function -> type = get_return_type(return_type);
   new_function -> parameters = parameters_list;
+  new_function -> param_amount = count_parameters(parameters_list);
   new_function -> enviroment = temporal_enviroment;
   new_function -> next = fun_list_head;
+  if (body_head == NULL)
+    new_function -> is_extern = true;
   new_function -> body = body_head;
   new_function -> max_offset = current_local_offset + 8;
   fun_list_head = new_function;

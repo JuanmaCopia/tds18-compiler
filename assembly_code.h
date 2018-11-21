@@ -8,6 +8,11 @@
 #define AL  "%al"
 #define DL	"%dl"
 
+#define RDI "%rdi"
+#define RSI "%rsi"
+#define R8 "%r8"
+#define R9 "%r9"
+
 #define MOVQ "movq "
 #define ADD "add  "
 #define SUB "sub  "
@@ -57,3 +62,4 @@ void generate_assembly_bool_operation(InstructionNode * ins, char * operation_st
 void generate_assembly_compare(InstructionNode * ins);
 void generate_assembly_push(InstructionNode * ins);
 void generate_assembly_return(InstructionNode * ins);
+void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg);

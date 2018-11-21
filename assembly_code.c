@@ -91,6 +91,24 @@ void generate_assembly_code(InstructionNode * ins) {
 			case RETURN:
 				generate_assembly_return(ins);
 				break;
+			case PUSH1:
+        generate_assembly_extern_param_passage(ins, RDI);
+				break;
+			case PUSH2:
+        generate_assembly_extern_param_passage(ins, RSI);
+				break;
+			case PUSH3:
+        generate_assembly_extern_param_passage(ins, RDX);
+				break;
+			case PUSH4:
+        generate_assembly_extern_param_passage(ins, RCX);
+				break;
+			case PUSH5:
+        generate_assembly_extern_param_passage(ins, R8);
+				break;
+			case PUSH6:
+        generate_assembly_extern_param_passage(ins, R9);
+				break;
 			case NEGAT:
 				break;
 			case EXTERN:
@@ -211,6 +229,12 @@ void generate_assembly_push(InstructionNode * ins) {
     create_instruction_push_const(ins -> result -> value);
   else
 	  create_instruction_1stack(PUSH_, ins -> result -> offset);
+}
+
+void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg) {
+	if (ins -> result -> is_defined)
+		create_instruction_constant_to_stack(MOVQ, ins -> result -> value, ins -> result -> offset);
+	create_instruction_stack_to_reg(MOVQ, ins -> result -> offset, reg);
 }
 
 void generate_assembly_return(InstructionNode * ins) {
