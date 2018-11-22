@@ -7,7 +7,7 @@ begin
   
   integer funParam (bool y, integer x, integer a, integer b, integer c, integer d, integer e, integer f, integer g)
   begin
-      if (flag) then
+      if (y) then
       begin
      	 return g*(x+a);
       end
