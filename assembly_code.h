@@ -13,6 +13,8 @@
 #define RSI "%rsi"
 #define R8 "%r8"
 #define R9 "%r9"
+#define R10 "%r10"
+#define R11 "%r11"
 
 #define MOVQ "movq "
 #define MOVL "movl "

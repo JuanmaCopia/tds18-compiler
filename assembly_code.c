@@ -168,7 +168,7 @@ char * create_asmlabel() {
   char label_name[64];
   sprintf(label_name, "asmlabel%d\0", label_amount);
   char * res = malloc(strlen(label_name));
-  sprintf(res, label_name);
+  sprintf(res, "%s", label_name);
   label_amount++;
   return res;
 }
@@ -253,7 +253,8 @@ void generate_assembly_begin_fun(InstructionNode * ins) {
 }
 
 void generate_assembly_end_fun(InstructionNode * ins) {
-	fprintf(assembly_file, "\tleave\n\tret\n", ins -> result -> offset * -1);
+	//fprintf(assembly_file, "\tleave\n\tret\n", ins -> result -> offset * -1);
+	fprintf(assembly_file, "\tleave\n\tret\n");
 }
 
 char * create_assembly_label(char * id) {
@@ -265,25 +266,25 @@ void create_instruction_reg_to_reg(char * instruction, char * reg1, char * reg2)
 }
 
 void create_instruction_stack_to_reg(char * instruction, int offset, char * reg) {
-	fprintf(assembly_file, "\t%s\t%d(%rbp), %s \n", instruction, offset, reg);
+	fprintf(assembly_file, "\t%s\t%d%s, %s \n", instruction, offset, RBP, reg);
 }
 
 void create_instruction_reg_to_stack(char * instruction, char * reg1, int offset) {
-	fprintf(assembly_file, "\t%s\t%s, %d(%rbp) \n", instruction, reg1, offset);
+	fprintf(assembly_file, "\t%s\t%s, %d%s \n", instruction, reg1, offset, RBP);
 }
 
 void create_instruction_stack_to_stack(char * instruction, int offset1, int offset2) {
 	if (strcmp(instruction, MOVQ) == 0) {
-		fprintf(assembly_file, "\t%s\t%d(%rbp), %r10\n", instruction, offset1);
-		fprintf(assembly_file, "\t%s\t%r10, %d(%rbp)\n", instruction, offset2);
+		fprintf(assembly_file, "\t%s\t%d%s, %s\n", instruction, offset1, RBP, R10);
+		fprintf(assembly_file, "\t%s\t%s, %d%s\n", instruction, R10, offset2, RBP);
 	}
 	else {
-		fprintf(assembly_file, "\t%s\t%d(%rbp), %d(%rbp) \n", instruction, offset1, offset2);
+		fprintf(assembly_file, "\t%s\t%d%s, %d%s \n", instruction, offset1, RBP, offset2, RBP);
 	}
 }
 
 void create_instruction_constant_to_stack(char * instruction, int constant, int offset) {
-	fprintf(assembly_file, "\t%s\t$%d, %d(%rbp) \n", instruction, constant, offset);
+	fprintf(assembly_file, "\t%s\t$%d, %d%s \n", instruction, constant, offset, RBP);
 }
 
 void create_instruction_constant_to_reg(char * instruction, int constant, char * reg) {
@@ -303,7 +304,7 @@ void create_instruction_string(char * instruction, char * str) {
 }
 
 void create_instruction_1stack(char * instruction, int offset) {
-	fprintf(assembly_file, "\t%s\t%d(%rbp) \n", instruction, offset);
+	fprintf(assembly_file, "\t%s\t%d%s \n", instruction, offset, RBP);
 }
 
 void create_instruction_1const(char * instruction, int constant) {

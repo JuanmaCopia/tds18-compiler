@@ -142,7 +142,7 @@ VarNode * create_label() {
   char label_name[128];
   sprintf(label_name, "label%d\0", label_quantity);
   char * res = malloc(strlen(label_name));
-  sprintf(res, label_name);
+  sprintf(res, "%s", label_name);
   VarNode * new_node = create_var_node();
   new_node -> id = res;
   new_node -> kind = _label;

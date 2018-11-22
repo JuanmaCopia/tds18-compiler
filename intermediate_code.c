@@ -37,7 +37,7 @@ VarNode * create_temporal() {
   char temp_name[128];
   sprintf(temp_name, "t%d\0", temp_quantity);
   char * res = malloc(strlen(temp_name));
-  sprintf(res, temp_name);
+  sprintf(res, "%s", temp_name);
   VarNode * new_node = create_var_node();
   increase_function_maxoffset();
   new_node -> offset = max_offset_current_function;
