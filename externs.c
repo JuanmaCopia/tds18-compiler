@@ -11,8 +11,12 @@ void printBool(int x) {
 
 void printGuiones( ){
     printf("----------------------------------------------------------\n");
-
 }
+
+void printSpace( ){
+    printf("\n\n");
+}
+
 
 void print(int n){
     printf("Valor: %d\n", n);
