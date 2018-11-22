@@ -152,16 +152,40 @@ InstructionNode * create_instruction_return(ASTNode * root) {
 }
 
 /*
+  Returns the amount of parameters on the list.
+*/
+int count_params(ASTNode * param_list) {
+  int amount = 0;
+  ASTNode * aux = param_list;
+  while (aux != NULL) {
+    amount++;
+    aux = aux -> next_statement;
+  }
+  return amount;
+}
+
+/*
   Creates the needed instructions to make a push instruction.
 */
 void create_push_instructions(ASTNode * parameters) {
   //printf("pushea parametro \n");
+  int amount_parameters = count_params(parameters);
+  ASTNode * reverse[amount_parameters];
   ASTNode * aux = parameters;
-  while (aux != NULL) {
-    add_instruction(create_instructionNode(PUSH, create_instructions(aux) -> result, NULL, NULL));
+  int i = amount_parameters - 1;
+  while (aux != NULL) { 
+    reverse[i] = aux;
+    i--;
     aux = aux -> next_statement; 
   }
+  printf("\n\nel valor de i es: %d\n\n",i);
+  i = 0;
+  while ( i < amount_parameters) {
+    add_instruction(create_instructionNode(PUSH, create_instructions(reverse[i]) -> result, NULL, NULL));
+    i++;
+  }
 }
+
 
 /*
   Creates a pop instruction for each parameter.
