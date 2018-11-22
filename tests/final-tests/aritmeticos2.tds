@@ -17,7 +17,7 @@ program
 			e = b + a;
 			print(e);
 			e = a - b;
-			print e;
+			print(e);
 			e = b - a;
 			print(e);
 			e = a * b;
