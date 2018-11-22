@@ -736,19 +736,19 @@ method_decl: type _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ code_block
     {
       FunctionNode * new_function = add_function_to_funlist(2, $2, NULL, $5);
     }
-  | type _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ _EXTERN_
+  | type _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ _EXTERN_ _SEMICOLON_
     {
       FunctionNode * new_function = add_function_to_funlist($1, $2, $4, NULL);
     }
-  | type _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ _EXTERN_
+  | type _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ _EXTERN_ _SEMICOLON_
     {
       FunctionNode * new_function = add_function_to_funlist($1, $2, NULL, NULL);
     }
-  | _VOID_ _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ _EXTERN_
+  | _VOID_ _ID_ _L_PARENTHESIS_ params_def _R_PARENTHESIS_ _EXTERN_ _SEMICOLON_
     {
       FunctionNode * new_function = add_function_to_funlist(-1, $2, $4, NULL);
     }
-  | _VOID_ _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ _EXTERN_
+  | _VOID_ _ID_ _L_PARENTHESIS_ _R_PARENTHESIS_ _EXTERN_ _SEMICOLON_
     {
       FunctionNode * new_function = add_function_to_funlist(-1, $2, NULL, NULL);
     }

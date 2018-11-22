@@ -1,12 +1,21 @@
 program
 begin
 
-	void print(integer x) extern
+	void print(integer x) extern;
+	void printBool(bool x) extern;
 
 	void main()
 	begin
-		integer result;
-		result = 15 / 3;
-		print(result);
+		bool result;
+		integer a,b;
+		a = 10;
+		b = 0;
+		while (b < a) begin
+			b = b + 13;
+		end
+
+		print(b);
+		//result = a < b;
+		//printBool(result);
 	end
 end

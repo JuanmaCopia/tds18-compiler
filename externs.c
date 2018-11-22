@@ -1,5 +1,19 @@
 #include <stdio.h>
 
-void print(int x) {
-    printf("El valor es: %d\n", x);
+void printBool(int x) {
+    if (x == 0)
+        printf("false\n");
+    else {
+        if (x == 1)
+            printf("true\n");
+    }
+}
+
+void printGuiones( ){
+    printf("----------------------------------------------------------\n");
+
+}
+
+void print(int n){
+    printf("Valor: %d\n", n);
 }

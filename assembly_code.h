@@ -2,6 +2,7 @@
 
 #define RBP "(%rbp)"
 #define RAX "%rax"
+#define EAX "%eax"
 #define RBX "%rbx"
 #define RCX "%rcx"
 #define RDX "%rdx"
@@ -14,10 +15,14 @@
 #define R9 "%r9"
 
 #define MOVQ "movq "
+#define MOVL "movl "
 #define ADD "add  "
 #define SUB "sub  "
 #define IMUL "imul "
 #define IDIV "idiv "
+#define IDIVL "idivl"
+#define IDIVQ "idivq"
+#define CQTO "cqto "
 #define COMP "cmp  "
 #define JUMP "jmp  "
 #define JUMPE "je  "

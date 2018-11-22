@@ -157,10 +157,9 @@ void generate_assembly_div(InstructionNode * ins, char * reg) {
 		create_instruction_constant_to_stack(MOVQ, ins -> op1 -> value, ins -> op1 -> offset);
 	if (ins -> op2 -> is_defined)
 		create_instruction_constant_to_stack(MOVQ, ins -> op2 -> value, ins -> op2 -> offset);
-	create_instruction_constant_to_reg(MOVQ, 0, RAX);
-	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RDX);
-	create_instruction_stack_to_reg(MOVQ, ins -> op2 -> offset, RBX);
-	create_instruction_1reg(IDIV, RBX);
+	create_instruction_stack_to_reg(MOVQ, ins -> op1 -> offset, RAX);
+	create_instruction_string(CQTO, "");
+	create_instruction_1stack(IDIVQ, ins -> op2 -> offset);
 	create_instruction_reg_to_stack(MOVQ, reg, ins -> result -> offset);
 }
 
