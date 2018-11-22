@@ -1,0 +1,39 @@
+program
+  begin
+
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+    bool mayor (integer y, integer x)
+      begin
+        if (y > x) then
+          begin
+            return true;
+          end
+        else
+          begin
+            return false;
+          end
+      end
+    integer  main()
+      begin
+        integer x,z,w;
+        bool y;
+        w = (5 + (2*2)) / 3; {3}
+        x = 4;
+        z = w * 10; //30
+        
+        {Se pasara como parametro a la funcion una expresion}
+        y = mayor(x+10,z-10); {false}
+        if (y) then
+          begin
+            print(x);
+            return x;
+          end
+        else
+          begin
+            print(z);
+            return z; //30
+          end
+      end
+  end

@@ -1,0 +1,50 @@
+program
+   begin
+ 
+      void printGuiones( ) extern;
+      void print(integer n) extern;
+
+      integer potencia (integer x, integer n)
+      begin
+        integer i,r;
+        i = 1;
+        r = x;
+        while (i<n)
+        	begin
+        		r = r*x;
+        		i = i+1;
+        	end
+        return r;
+      end
+
+    integer factorial (integer v)
+    	begin
+      	integer limit,c,fact;
+      	limit = 15;
+      	if ( v > limit) then
+        	begin 
+          	return (-1);
+        	end
+      	else 
+        	begin 
+          	c = 0;
+          	fact = 1;
+          	while (c<v)
+            	begin
+              	c = c+1;
+              	fact = fact*c;
+            	end
+          	return fact;
+        	end
+    	end
+
+    integer main()
+     	begin
+     		integer x,y,z;
+     		x = 2;
+     		y = 3;
+     		z = potencia(x,factorial(y));  //potencia(2,6) = 64
+               print(z);
+     		return z;
+     	end
+	end
