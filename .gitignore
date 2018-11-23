@@ -4,6 +4,7 @@
 *.output
 *.o
 *.s
+*.s.*
 !structs.h
 !structs.c
 !intermediate_code.c
