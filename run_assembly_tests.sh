@@ -9,7 +9,7 @@ for i in $(ls tests/assembly_tests -C1)
 do
 echo -e "${RED}Archivo Actual: " $i "${NC}"
 ./c-tds ./tests/assembly_tests/$i
-echo ""
+echo "Press enter to continue...."
 read -n 1 key
 done
 echo "--------------------------------------"
@@ -19,7 +19,7 @@ for i in $(ls tests/final-tests -C1)
 do
 echo -e "${RED}Archivo Actual: " $i "${NC}"
 ./c-tds ./tests/final-tests/$i
-echo ""
+echo "Press enter to continue...."
 read -n 1 key
 done
 echo "-------------------------------------"
