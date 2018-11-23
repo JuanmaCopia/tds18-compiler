@@ -99,11 +99,16 @@ ASTNode * create_AST_leave_from_value(int value, bool is_boolean) {
 */
 VarNode * create_var(char * var_id) {
   VarNode * new_var = create_VarNode(var_id, 0, false);
-  if (amount_open_enviroments == 1)
+  if (amount_open_enviroments == 1) {
     new_var -> kind = _global;
+    new_var -> string_offset = create_global_string_offset(new_var -> id);
+    printf("string offset de global generado: %s\n", new_var -> string_offset);
+  }
   else {
     new_var -> kind = _local;
     new_var -> offset = current_local_offset;
+    new_var -> string_offset = create_string_offset(current_local_offset);
+    printf("string offset de local generado: %s\n", new_var -> string_offset);
     increase_local_offset();
   }
   return new_var;
@@ -142,8 +147,10 @@ VarNode * concat_varnodes(VarNode * list1, VarNode * list2) {
   Closes the current enviroment, leaving the next enviroment on the top of the stack.
 */
 void close_enviroment() {
-  symbol_table = symbol_table -> next;
-  amount_open_enviroments--;
+  if (amount_open_enviroments != 1) {
+    symbol_table = symbol_table -> next;
+    amount_open_enviroments--;
+  }
 }
 
 /*
@@ -416,8 +423,8 @@ void print_symbol_table() {
           printf("\tinteger ");
         printf("%s ", varAuxNode -> id);
         printf("= %d", varAuxNode -> value);
+        printf("\t%s\n", get_varnode_kind_string(varAuxNode));
         varAuxNode = varAuxNode -> next;
-        printf("\n");
       }
       aux = aux -> next;
       env--;
@@ -691,7 +698,7 @@ prog: _PROGRAM_ scope_open prog_body scope_close
       print_functions();
       generate_fun_code(fun_list_head);
       print_instructions();
-      create_assembly_file(head);
+      create_assembly_file(head, symbol_table -> variables);
     }
 ;
 
@@ -712,6 +719,9 @@ scope_close: _END_
 
 prog_body: vars_block methods_block main_decl
   | vars_block main_decl
+    {
+
+    }
   | methods_block main_decl
   | main_decl
 ;

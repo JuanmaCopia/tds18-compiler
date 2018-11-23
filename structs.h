@@ -80,6 +80,7 @@ typedef struct var_struct {
   bool is_defined;
   VarNodeKind kind;
   int offset;
+  char * string_offset;
   struct var_struct *next;
 } VarNode;
 
@@ -160,3 +161,5 @@ char * get_string_representation(ASTNode * node);
 bool is_boolean_operation(int op);
 VarNode * create_varnode_from_param(Parameter * param);
 char * get_varnode_kind_string(VarNode * var);
+char * create_string_offset(int offset);
+char * create_global_string_offset(char * var_id);

@@ -13,6 +13,21 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
   return new_node;
 }
 
+char * create_string_offset(int offset) {
+  char offset_string[64];
+  sprintf(offset_string, "%d(%rbp)\0", offset);
+  char * res = malloc(strlen(offset_string));
+  sprintf(res, "%s", offset_string);
+  return res;
+}
+
+char * create_global_string_offset(char * var_id) {
+  char offset_string[64];
+  sprintf(offset_string, "%s(%s)\0", var_id, "%rip");
+  char * res = malloc(strlen(offset_string));
+  sprintf(res, "%s", offset_string);
+  return res;
+}
 /*
   Creates and returns a new VarNode created from a parameter.
 */
@@ -20,6 +35,8 @@ VarNode * create_varnode_from_param(Parameter * param) {
   VarNode * new_varnode = create_VarNode(param -> id, param -> value, param -> is_boolean);
   new_varnode -> is_defined = false;
   new_varnode -> offset = param -> offset;
+  new_varnode -> string_offset = create_string_offset(param -> offset);
+  printf("string offset de parametro generado: %s\n", new_varnode -> string_offset);
   new_varnode -> kind = _parameter;
   return new_varnode;
 }
@@ -223,7 +240,6 @@ char * get_varnode_kind_string(VarNode * var) {
     case _parameter: return "parameter";
     case _temporal: return "temporal";
     case _label: return "label";
-    //case _constant: return "constant";
   }
 }
 

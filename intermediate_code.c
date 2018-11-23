@@ -41,6 +41,8 @@ VarNode * create_temporal() {
   VarNode * new_node = create_var_node();
   increase_function_maxoffset();
   new_node -> offset = max_offset_current_function;
+  new_node -> string_offset = create_string_offset(new_node -> offset);
+  printf("string offset de temporal generado: %s\n", new_node -> string_offset);
   new_node -> id = res;
   new_node -> kind = _temporal;
   temp_quantity++;
@@ -320,6 +322,9 @@ void print_varnode(VarNode * var) {
       break;
     case _label:
         printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
+      break;
+    case _global:
+      printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
       break;
     default:
       printf(" ERROR, unknown varnode type \n");
