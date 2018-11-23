@@ -3,10 +3,16 @@ if [ $# -eq 0 ]
     echo "No program code supplied"
   else
     echo "-------------- compilando...-------------"
+    mv assembly.s assembly.s.save
     ./parser.out $1
-    echo "-------------- assembler generado  -----------"
-    gcc -g -o executable assembly.s externs.c
-    echo "-------------- ejecutable generado  ----------"
-    echo "-------------- corriendo el programa  --------"
-    ./executable
+    if [ -e assembly.s ] 
+      then
+        echo "-------------- assembler generado  -----------"
+        gcc -g -o executable assembly.s externs.c
+        echo "-------------- ejecutable generado  ----------"
+        echo "-------------- corriendo el programa  --------"
+        ./executable
+      else
+        echo "----------------------------------------------"
+    fi
 fi
