@@ -553,7 +553,7 @@ ReturnType get_expression_type(ASTNode * expr) {
 bool has_return(ASTNode * body) {
   ASTNode * root = body;
   if (root != NULL) {
-    if (is_return_node(root))
+    if (is_return_node(root) && (root -> right_child != NULL))
       return true;
     return has_return(root -> next_statement) || has_return(root -> right_child) || has_return(root -> left_child);
   }

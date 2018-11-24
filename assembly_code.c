@@ -1,6 +1,7 @@
 #include "assembly_code.h"
 
 int label_amount = 0;
+int final_label_amount = 0;
 
 void initialize() {
 	assembly_file = fopen("assembly.s" ,"w");
@@ -104,27 +105,29 @@ void generate_assembly_code(InstructionNode * ins) {
 				generate_assembly_return(ins);
 				break;
 			case PUSH1:
-			generate_assembly_extern_param_passage(ins, RDI);
-					break;
-				case PUSH2:
-			generate_assembly_extern_param_passage(ins, RSI);
-					break;
-				case PUSH3:
-			generate_assembly_extern_param_passage(ins, RDX);
-					break;
-				case PUSH4:
-			generate_assembly_extern_param_passage(ins, RCX);
-					break;
-				case PUSH5:
-			generate_assembly_extern_param_passage(ins, R8);
-					break;
-				case PUSH6:
-			generate_assembly_extern_param_passage(ins, R9);
-					break;
-				case NEGAT:
-					break;
-				case EXTERN:
-					break;
+				generate_assembly_extern_param_passage(ins, RDI);
+				break;
+			case PUSH2:
+				generate_assembly_extern_param_passage(ins, RSI);
+				break;
+			case PUSH3:
+				generate_assembly_extern_param_passage(ins, RDX);
+				break;
+			case PUSH4:
+				generate_assembly_extern_param_passage(ins, RCX);
+				break;
+			case PUSH5:
+				generate_assembly_extern_param_passage(ins, R8);
+				break;
+			case PUSH6:
+				generate_assembly_extern_param_passage(ins, R9);
+				break;
+			case NEGAT:
+				generate_assembly_not(ins);
+				break;
+			case BREAK:
+				create_instruction_1op(JUMP, get_current_end_asmlabel());
+				break;
 			}
 } 
 
@@ -182,6 +185,23 @@ char * create_asmlabel() {
 	return res;
 }
 
+char * create_end_asmlabel() {
+	char label_name[64];
+	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	char * res = malloc(strlen(label_name));
+	sprintf(res, "%s", label_name);
+	final_label_amount++;
+	return res;
+}
+
+char * get_current_end_asmlabel() {
+	char label_name[64];
+	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	char * res = malloc(strlen(label_name));
+	sprintf(res, "%s", label_name);
+	return res;
+}
+
 void generate_assembly_and(InstructionNode * ins) {
 	char * label_false = create_asmlabel();
 	char * label_true = create_asmlabel();
@@ -204,6 +224,14 @@ void generate_assembly_and(InstructionNode * ins) {
 	create_instruction_2op(MOVQ, create_constant_string(1), ins -> result -> string_offset);
 	create_instruction_1op(JUMP, label_end);
 	create_assembly_label(label_end);
+}
+
+void generate_assembly_not(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
+	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
+	create_instruction_2op(XORQ, "$1", RAX);
+	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
 }
 
 void generate_assembly_or(InstructionNode * ins) {
@@ -249,10 +277,13 @@ void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg) {
 }
 
 void generate_assembly_return(InstructionNode * ins) {
-	if (ins -> result -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> result -> value), RAX);
-	else
-		create_instruction_2op(MOVQ, ins -> result -> string_offset, RAX);
+	if (ins -> result != NULL) {
+		if (ins -> result -> is_defined)
+			create_instruction_2op(MOVQ, create_constant_string(ins -> result -> value), RAX);
+		else
+			create_instruction_2op(MOVQ, ins -> result -> string_offset, RAX);
+	}
+	create_instruction_1op(JUMP, get_current_end_asmlabel());
 }
 
 void generate_assembly_begin_fun(InstructionNode * ins) {
@@ -263,6 +294,7 @@ void generate_assembly_begin_fun(InstructionNode * ins) {
 }
 
 void generate_assembly_end_fun(InstructionNode * ins) {
+	create_assembly_label(create_end_asmlabel());
 	fprintf(assembly_file, "\tleave\n\tret\n");
 }
 

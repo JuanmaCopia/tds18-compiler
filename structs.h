@@ -33,7 +33,7 @@
 #define CMP 'c' + 'm'
 #define RETURN 'r'
 #define NEGAT 'n' + 'g'
-#define EXTERN 'e' + 'x' + 't'
+#define BREAK 'B'
 
 #define PUSH1 'P'
 #define PUSH2 'P' + 1

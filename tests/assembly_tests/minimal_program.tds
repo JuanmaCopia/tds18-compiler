@@ -4,24 +4,11 @@ begin
 	void print(integer x) extern;
 	void printBool(bool x) extern;
 
-	bool mayor (integer y, integer x)
-      begin
-        print(y);
-        print(x);
-        if (y > x) then
-          begin
-            return true;
-          end
-        else
-          begin
-            return false;
-          end
-      end
-
-	void main()
+void main()
 	begin
-		bool result;
-		result = mayor(5,4);
+		bool result,a;
+    a = false;
+		result = !a;
     printBool(result);
 	end
 end

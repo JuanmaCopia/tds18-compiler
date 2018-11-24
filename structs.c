@@ -147,7 +147,7 @@ char * get_operation_string(InstructionNode * i) {
     case CMP:           return "CMP  ";
     case RETURN:        return "RETRN";
     case NEGAT:         return "NEG  ";
-    case EXTERN:        return "EXTRN";
+    case BREAK:         return "BREAK";
     default:            return "------ UNKNOWN OPERATION ------";
   }
 }

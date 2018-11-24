@@ -36,6 +36,7 @@
 #define PUSH_ "push "
 #define POP_ "pop  "
 #define CALL_ "call "
+#define XORQ "xorq "
 
 FILE * assembly_file = NULL;
 
@@ -45,6 +46,7 @@ void create_assembly_file(InstructionNode * ins, VarNode * global_variables);
 void generate_assembly_code(InstructionNode * ins);
 char * create_assembly_label(char * id);
 char * create_asmlabel();
+char * get_current_end_asmlabel();
 
 void generate_assembly_global_variables(VarNode * variables);
 void generate_assembly_begin_fun(InstructionNode * ins);
@@ -59,6 +61,7 @@ void generate_assembly_compare(InstructionNode * ins);
 void generate_assembly_push(InstructionNode * ins);
 void generate_assembly_return(InstructionNode * ins);
 void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg);
+void generate_assembly_not(InstructionNode * ins);
 
 
 void create_instruction_2op(char * instruction, char * op1, char * op2);

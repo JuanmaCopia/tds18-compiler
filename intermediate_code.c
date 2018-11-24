@@ -148,7 +148,11 @@ void create_instructions_while(ASTNode * root) {
 */
 InstructionNode * create_instruction_return(ASTNode * root) {
   //printf("encuentra un return \n");
-  InstructionNode * return_ins = create_instructionNode(RETURN, create_instructions(root -> right_child) -> result, NULL, NULL);
+  InstructionNode * return_ins;
+  if (root -> right_child != NULL)
+    return_ins = create_instructionNode(RETURN, create_instructions(root -> right_child) -> result, NULL, NULL);
+  else 
+    return_ins = create_instructionNode(BREAK, create_temporal(), NULL, NULL);
   add_instruction(return_ins);
   return return_ins;
 }
@@ -257,12 +261,6 @@ InstructionNode * create_instructions_method_call(ASTNode * root) {
   return call;
 }
 
-// is needed?
-InstructionNode * create_extern_instruction(FunctionNode * fun) {
-  VarNode * fun_data = create_temporal_with_id(fun -> id);
-  return create_instructionNode(EXTERN, fun_data, NULL, NULL);
-}
-
 /*
   Creates and adds to the list the corresponding intermediate code instructions for an statement.
 */
@@ -358,7 +356,7 @@ void print_instruction(InstructionNode * i) {
       printf("%s\n", result_string);
       //print_varnode(i -> result);
       break;
-    case RETURN: case EXTERN:
+    case RETURN:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
       print_varnode(i -> result);
       break;
@@ -386,7 +384,7 @@ void print_instruction(InstructionNode * i) {
       //print_varnode(i -> result);
       print_varnode(i -> op1);
       break;
-    case POP:
+    case POP: case BREAK:
       printf("\t%s\n\n", get_operation_string(i));
       break;
     default:
