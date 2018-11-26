@@ -3,12 +3,11 @@ begin
 
 	void print(integer x) extern;
 	void printBool(bool x) extern;
+	integer sum(integer a, integer b) extern;
+	void print2(integer a, integer b) extern;
 
 void main()
 	begin
-		bool result,a;
-    a = false;
-		result = !a;
-    printBool(result);
+		print2(sum(1,2), sum(8,1));
 	end
 end

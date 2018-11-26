@@ -18,6 +18,15 @@ void printSpace( ){
 }
 
 
-void print(int n){
+void print(int n) {
     printf("Valor: %d\n", n);
+}
+
+
+int sum(int a, int b) {
+    return a + b;
+}
+
+void print2(int a, int b) {
+    printf("los val son: %d y %d \n", a, b);
 }

@@ -593,18 +593,20 @@ bool check_functions_return_types() {
   FunctionNode * aux = fun_list_head;
   bool no_errors_found = true;
   while (aux != NULL && no_errors_found) {
-    if (aux -> type == _void) {
-      if (has_return(aux -> body)) {
-        error_message = "Type Error: Cannot return an expression in a void function";
+    if (!aux -> is_extern) {
+      if (aux -> type == _void) {
+        if (has_return(aux -> body)) {
+          error_message = "Type Error: Cannot return an expression in a void function";
+          return false;
+        }
+      }
+      else if (!has_return(aux -> body)) {
+        error_message = "Missing return statement";
         return false;
       }
+      else
+        no_errors_found = check_return_types(aux -> body, aux -> type);
     }
-    else if (!has_return(aux -> body)) {
-      error_message = "Missing return statement";
-      return false;
-    }
-    else
-      no_errors_found = check_return_types(aux -> body, aux -> type);
     aux = aux -> next;
   }
   return no_errors_found;
