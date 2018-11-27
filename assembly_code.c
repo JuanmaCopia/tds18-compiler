@@ -1,18 +1,27 @@
 #include "assembly_code.h"
 
-int label_amount = 0;
-int final_label_amount = 0;
+int label_amount = 0;        // number of labels created
+int final_label_amount = 0;  // number of end labels created.
 
+/*
+	Open/Creates the assembly code file.
+*/
 void initialize() {
 	assembly_file = fopen("assembly.s" ,"w");
 	if (assembly_file == NULL)
 		assembly_file = fopen("assembly.s", "wb");
 }
 
+/*
+	Close the assembly code file.
+*/
 void finalize() {
 	fclose(assembly_file);
 }
 
+/*
+	Generates all the assembler instructions.
+*/
 void create_assembly_file(InstructionNode * ins, VarNode * global_variables) {
 	if (assembly_file == NULL)
 		initialize();
@@ -25,6 +34,9 @@ void create_assembly_file(InstructionNode * ins, VarNode * global_variables) {
 	finalize();
 }
 
+/*
+	Generates the assembly instructions that creates the global variables.
+*/
 void generate_assembly_global_variables(VarNode * variables) {
 	fprintf(assembly_file, "\t%s\n", ".text");
 	VarNode * aux = variables;
@@ -34,6 +46,9 @@ void generate_assembly_global_variables(VarNode * variables) {
 	}
 }
 
+/*
+	Given an intermediate code instructions, generates the corresponding assembly instructions.
+*/
 void generate_assembly_code(InstructionNode * ins) {
 	if (ins != NULL)
 		switch (ins -> operation) {
@@ -131,6 +146,9 @@ void generate_assembly_code(InstructionNode * ins) {
 			}
 } 
 
+/*
+	Generates the corresponding assembly instructions that compares 2 operands.
+*/
 void generate_assembly_compare(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -141,6 +159,9 @@ void generate_assembly_compare(InstructionNode * ins) {
 	create_instruction_2op(COMP, RDX, RAX);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+*/
 void generate_assembly_operation(InstructionNode * ins, char * operation_string) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -152,6 +173,9 @@ void generate_assembly_operation(InstructionNode * ins, char * operation_string)
 	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+*/
 void generate_assembly_bool_operation(InstructionNode * ins, char * operation_string) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -165,6 +189,9 @@ void generate_assembly_bool_operation(InstructionNode * ins, char * operation_st
 	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes a DIV or a MOD operation.
+*/
 void generate_assembly_div(InstructionNode * ins, char * reg) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -176,32 +203,9 @@ void generate_assembly_div(InstructionNode * ins, char * reg) {
 	create_instruction_2op(MOVQ, reg, ins -> result -> string_offset);
 }
 
-char * create_asmlabel() {
-	char label_name[64];
-	sprintf(label_name, "asmlabel%d\0", label_amount);
-	char * res = malloc(strlen(label_name));
-	sprintf(res, "%s", label_name);
-	label_amount++;
-	return res;
-}
-
-char * create_end_asmlabel() {
-	char label_name[64];
-	sprintf(label_name, "endlabel%d\0", final_label_amount);
-	char * res = malloc(strlen(label_name));
-	sprintf(res, "%s", label_name);
-	final_label_amount++;
-	return res;
-}
-
-char * get_current_end_asmlabel() {
-	char label_name[64];
-	sprintf(label_name, "endlabel%d\0", final_label_amount);
-	char * res = malloc(strlen(label_name));
-	sprintf(res, "%s", label_name);
-	return res;
-}
-
+/*
+	Generates the corresponding assembly instructions that executes an AND operation.
+*/
 void generate_assembly_and(InstructionNode * ins) {
 	char * label_false = create_asmlabel();
 	char * label_true = create_asmlabel();
@@ -226,6 +230,9 @@ void generate_assembly_and(InstructionNode * ins) {
 	create_assembly_label(label_end);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes a NOT operation.
+*/
 void generate_assembly_not(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -234,6 +241,9 @@ void generate_assembly_not(InstructionNode * ins) {
 	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes an OR operation.
+*/
 void generate_assembly_or(InstructionNode * ins) {
 	char * label_false = create_asmlabel();
 	char * label_true = create_asmlabel();
@@ -256,6 +266,9 @@ void generate_assembly_or(InstructionNode * ins) {
 	create_assembly_label(label_end);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes an assignment.
+*/
 void generate_assembly_assign(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
@@ -263,6 +276,9 @@ void generate_assembly_assign(InstructionNode * ins) {
 	create_instruction_2op(MOVQ, R10, ins -> result -> string_offset);
 }
 
+/*
+	Generates a PUSH assembly instruction.
+*/
 void generate_assembly_push(InstructionNode * ins) {
 	if (ins -> result -> is_defined)
 	create_instruction_1op(PUSH_, create_constant_string(ins -> result -> value));
@@ -270,12 +286,18 @@ void generate_assembly_push(InstructionNode * ins) {
 	create_instruction_1op(PUSH_, ins -> result -> string_offset);
 }
 
+/*
+	Generates the assembly instructions that moves the parameters to the corresponding registers before an extern function call.
+*/
 void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg) {
 	if (ins -> result -> is_defined)
 		create_instruction_2op(MOVQ, create_constant_string(ins -> result -> value), ins -> result -> string_offset);
 	create_instruction_2op(MOVQ, ins -> result -> string_offset, reg);
 }
 
+/*
+	Generates the corresponding assembly instructions that executes a return.
+*/
 void generate_assembly_return(InstructionNode * ins) {
 	if (ins -> result != NULL) {
 		if (ins -> result -> is_defined)
@@ -286,6 +308,9 @@ void generate_assembly_return(InstructionNode * ins) {
 	create_instruction_1op(JUMP, get_current_end_asmlabel());
 }
 
+/*
+	Generates the assembly instructions needed on the begin of a function.
+*/
 void generate_assembly_begin_fun(InstructionNode * ins) {
 	if (ins -> result -> id == "main")
 		fprintf(assembly_file, "\t%s\n", ".globl main");
@@ -293,27 +318,77 @@ void generate_assembly_begin_fun(InstructionNode * ins) {
 	fprintf(assembly_file, "\tenter\t$(%d), $0\n", ins -> result -> offset * -1);
 }
 
+/*
+	Generates the assembly instructions needed on the end of a function.
+*/
 void generate_assembly_end_fun(InstructionNode * ins) {
 	create_assembly_label(create_end_asmlabel());
 	fprintf(assembly_file, "\tleave\n\tret\n");
 }
 
+/*
+	Creates an assembly label.
+*/
 char * create_assembly_label(char * id) {
 	fprintf(assembly_file, "%s:\n", id);
 }
 
+/*
+	Creates an assembly instruction with 2 operands.
+*/
 void create_instruction_2op(char * instruction, char * op1, char * op2) {
 	fprintf(assembly_file, "\t%s\t%s, %s \n", instruction, op1, op2);
 }
 
+/*
+	Creates an assembly instruction with 1 operand.
+*/
 void create_instruction_1op(char * instruction, char * op1) {
 	fprintf(assembly_file, "\t%s\t%s \n", instruction, op1);
 }
 
+/*
+	Returns a string that represents a constant in assembler. 
+*/
 char * create_constant_string(int constant) {
 	char constant_string[64];
 	sprintf(constant_string, "$%d\0", constant);
 	char * res = malloc(strlen(constant_string));
 	sprintf(res, "%s", constant_string);
+	return res;
+}
+
+/*
+	Returns a string that represents an assembly label.
+*/
+char * create_asmlabel() {
+	char label_name[64];
+	sprintf(label_name, "asmlabel%d\0", label_amount);
+	char * res = malloc(strlen(label_name));
+	sprintf(res, "%s", label_name);
+	label_amount++;
+	return res;
+}
+
+/*
+	Returns a string that represents an assembly label used at the end of a function.
+*/
+char * create_end_asmlabel() {
+	char label_name[64];
+	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	char * res = malloc(strlen(label_name));
+	sprintf(res, "%s", label_name);
+	final_label_amount++;
+	return res;
+}
+
+/*
+	Returns a string that represents the end assembly label of the current function. 
+*/
+char * get_current_end_asmlabel() {
+	char label_name[64];
+	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	char * res = malloc(strlen(label_name));
+	sprintf(res, "%s", label_name);
 	return res;
 }

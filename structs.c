@@ -1,6 +1,7 @@
 #include "structs.h"
 
 int label_quantity = 0;
+
 /*
   Creates and returns a new VarNode.
 */
@@ -13,6 +14,9 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
   return new_node;
 }
 
+/*
+	Returns a string that represents an offset of a local variable or of a temporal.
+*/
 char * create_string_offset(int offset) {
   char offset_string[64];
   sprintf(offset_string, "%d(%rbp)\0", offset);
@@ -21,6 +25,9 @@ char * create_string_offset(int offset) {
   return res;
 }
 
+/*
+	Returns a string that represents a assembler reference to a global variable.
+*/
 char * create_global_string_offset(char * var_id) {
   char offset_string[64];
   sprintf(offset_string, "%s(%s)\0", var_id, "%rip");
@@ -98,20 +105,6 @@ char * get_temporal_string(VarNode * temp) {
   }
   return temp -> id;
 }
-
-/*
-  Returns the string representation of a var.
-*/
-// char * get_var_string(VarNode * var) {
-//   switch (var -> kind) {
-//     case 0:
-//       return _boolean;
-//     case 1:
-//       return _integer;
-//     default:
-//       return _void;
-//   }
-// }
 
 /*
   Given an isntruction node returns the string representation of the operation.

@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#define RBP "(%rbp)"
 #define RAX "%rax"
 #define EAX "%eax"
 #define RBX "%rbx"
@@ -18,12 +17,9 @@
 #define RIP "%rip"
 
 #define MOVQ "movq "
-#define MOVL "movl "
 #define ADD "add  "
 #define SUB "sub  "
 #define IMUL "imul "
-#define IDIV "idiv "
-#define IDIVL "idivl"
 #define IDIVQ "idivq"
 #define CQTO "cqto "
 #define COMP "cmp  "
@@ -44,9 +40,15 @@ void initialize();
 void finalize();
 void create_assembly_file(InstructionNode * ins, VarNode * global_variables);
 void generate_assembly_code(InstructionNode * ins);
+
 char * create_assembly_label(char * id);
 char * create_asmlabel();
 char * get_current_end_asmlabel();
+char * create_end_asmlabel();
+char * create_constant_string(int constant);
+
+void create_instruction_2op(char * instruction, char * op1, char * op2);
+void create_instruction_1op(char * instruction, char * op1);
 
 void generate_assembly_global_variables(VarNode * variables);
 void generate_assembly_begin_fun(InstructionNode * ins);
@@ -62,8 +64,3 @@ void generate_assembly_push(InstructionNode * ins);
 void generate_assembly_return(InstructionNode * ins);
 void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg);
 void generate_assembly_not(InstructionNode * ins);
-
-
-void create_instruction_2op(char * instruction, char * op1, char * op2);
-void create_instruction_1op(char * instruction, char * op1);
-char * create_constant_string(int constant);
