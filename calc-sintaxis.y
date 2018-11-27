@@ -674,6 +674,50 @@ void AST_optimization() {
 	}
 }
 
+free_astnode_memory(ASTNode * ast) {
+  if (ast != NULL) {
+    ASTNode * next_statement = ast -> next_statement;
+    ASTNode * left_child = ast -> left_child;
+    ASTNode * right_child = ast -> right_child;
+    free_varnode_memory(ast -> var_data);
+    free(ast);
+    ast = NULL;
+    free_astnode_memory(left_child);
+    free_astnode_memory(right_child);
+    free_astnode_memory(next_statement);
+  }
+}
+free_varnode_memory(VarNode * v) {
+  if (v != NULL) {
+    VarNode * next = v -> next;
+    free(v -> string_offset);
+    free(v);
+    v = NULL;
+    free_varnode_memory(next);
+  }
+}
+
+void free_parameter_memory(Parameter * p) {
+  if (p != NULL) {
+    Parameter * next = p -> next;
+    free(p);
+    p = NULL;
+    free_parameter_memory(next);
+  }
+}
+
+void free_function_memory(FunctionNode * f) {
+  if (f != NULL) {
+    FunctionNode * next = f -> next;
+    free_parameter_memory(f -> parameters);
+    free_varnode_memory(f -> enviroment);
+    free_astnode_memory(f -> body);
+    free(f);
+    f = NULL;
+    free_function_memory(next);
+  }
+}
+
 %}
 
 %union {
@@ -766,6 +810,7 @@ prog: _PROGRAM_ scope_open prog_body scope_close
 			printf("codigo intermedio generado \n");
 			print_instructions();
 			create_assembly_file(head, symbol_table -> variables);
+			free_function_memory(fun_list_head);
 		}
 ;
 
