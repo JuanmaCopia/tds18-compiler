@@ -2,6 +2,8 @@
 
 InstructionNode * head, *last;
 
+int temp_quantity = 0;
+int max_offset_current_function;
 char * get_type_node_string(TypeNode tn);
 InstructionNode * create_instructions(ASTNode * root);
 void print_instruction(InstructionNode * i);
@@ -19,6 +21,42 @@ void add_instruction(InstructionNode * node) {
     head = node;
     last = node;
   }
+}
+
+/*
+  increases the max_offset of the current function.
+*/
+void increase_function_maxoffset() {
+  max_offset_current_function = max_offset_current_function - 8;
+}
+
+/*
+  Creates a new temporal.
+*/
+VarNode * create_temporal() {
+  char temp_name[128];
+  sprintf(temp_name, "t%d\0", temp_quantity);
+  char * res = malloc(strlen(temp_name));
+  sprintf(res, "%s", temp_name);
+  VarNode * new_node = create_var_node();
+  increase_function_maxoffset();
+  new_node -> offset = max_offset_current_function;
+  new_node -> string_offset = create_string_offset(new_node -> offset);
+  printf("string offset de temporal generado: %s\n", new_node -> string_offset);
+  new_node -> id = res;
+  new_node -> kind = _temporal;
+  temp_quantity++;
+  return new_node;
+}
+/*
+  Creates a new temporal and sets its value and type.
+*/
+VarNode * create_temporal_with_value(int value, bool is_boolean) {
+  VarNode * new_node = create_temporal();
+  new_node -> value = value;
+  new_node -> is_boolean = is_boolean;
+  new_node -> is_defined = true;
+  return new_node;
 }
 
 /*
@@ -51,7 +89,7 @@ InstructionNode * create_instruction_operation(ASTNode * root) {
   Creates the needed instructions to compute an assignment statement.
 */
 InstructionNode * create_instruction_assignment(ASTNode * root) {
-  printf("encuentra un assign \n");
+  //printf("encuentra un assign \n");
   InstructionNode * instruction = create_instructionNode(ASSIGN, NULL, NULL, NULL);
   instruction -> result = create_instructions(root -> left_child) -> result;
   instruction -> op1 = create_instructions(root -> right_child) -> result;
@@ -74,7 +112,7 @@ void add_statements_block_instructions(ASTNode * root) {
   Creates the needed instructions to compute an if statement.
 */
 void create_instructions_if(ASTNode * root) {
-  printf("encuentra un if \n");
+  //printf("encuentra un if \n");
   VarNode * cmp_temp = create_temporal();
   InstructionNode * condition = create_instructions(root -> left_child);
   add_instruction(create_instructionNode(CMP, cmp_temp, condition -> result, create_temporal_with_value(0, false)));
@@ -92,7 +130,7 @@ void create_instructions_if(ASTNode * root) {
   Creates the needed instructions to compute a while statement.
 */
 void create_instructions_while(ASTNode * root) {
-  printf("encuentra un while \n");
+  //printf("encuentra un while \n");
   VarNode * cmp_temp = create_temporal();
   InstructionNode * begin_label_ins = create_instructionNode(LABEL, create_label(), NULL, NULL);
   add_instruction(begin_label_ins);
@@ -109,21 +147,96 @@ void create_instructions_while(ASTNode * root) {
   Creates the needed instructions to compute a return statement.
 */
 InstructionNode * create_instruction_return(ASTNode * root) {
-  printf("encuentra un return \n");
-  InstructionNode * return_ins = create_instructionNode(RETURN, create_instructions(root -> right_child) -> result, NULL, NULL);
+  //printf("encuentra un return \n");
+  InstructionNode * return_ins;
+  if (root -> right_child != NULL)
+    return_ins = create_instructionNode(RETURN, create_instructions(root -> right_child) -> result, NULL, NULL);
+  else 
+    return_ins = create_instructionNode(BREAK, create_temporal(), NULL, NULL);
   add_instruction(return_ins);
   return return_ins;
+}
+
+/*
+  Returns the amount of parameters on the list.
+*/
+int count_params(ASTNode * param_list) {
+  int amount = 0;
+  ASTNode * aux = param_list;
+  while (aux != NULL) {
+    amount++;
+    aux = aux -> next_statement;
+  }
+  return amount;
 }
 
 /*
   Creates the needed instructions to make a push instruction.
 */
 void create_push_instructions(ASTNode * parameters) {
-  printf("pushea parametros \n");
+  //printf("pushea parametro \n");
+  int amount_parameters = count_params(parameters);
+  ASTNode * reverse[amount_parameters];
+  ASTNode * aux = parameters;
+  int i = amount_parameters - 1;
+  while (aux != NULL) { 
+    reverse[i] = aux;
+    i--;
+    aux = aux -> next_statement; 
+  }
+  printf("\n\nel valor de i es: %d\n\n",i);
+  i = 0;
+  while ( i < amount_parameters) {
+    add_instruction(create_instructionNode(PUSH, create_instructions(reverse[i]) -> result, NULL, NULL));
+    i++;
+  }
+}
+
+
+/*
+  Creates a pop instruction for each parameter.
+*/
+void create_pop_instructions(ASTNode * parameters) {
+  //printf("popea parametro \n");
   ASTNode * aux = parameters;
   while (aux != NULL) {
-    add_instruction(create_instructionNode(PUSH, create_instructions(aux) -> result, NULL, NULL));
-    aux = aux -> right_child; 
+    add_instruction(create_instructionNode(POP, NULL , NULL, NULL));
+    aux = aux -> next_statement; 
+  }
+}
+
+/*
+  Creates the needed instructions to make a push instruction.
+*/
+void create_extern_push_instructions(ASTNode * parameters, int param_amount) {
+  //printf("pushea parametro \n");
+  int counter = 0;
+  ASTNode * aux = parameters;
+  while (aux != NULL && counter < 6) {
+    add_instruction(create_instructionNode(PUSH1 + counter, create_instructions(aux) -> result, NULL, NULL));
+    aux = aux -> next_statement; 
+    counter++;
+  }
+  if (param_amount > 6)
+    create_push_instructions(aux);
+}
+
+/*
+  Creates a pop instruction for each parameter.
+*/
+void create_extern_pop_instructions(ASTNode * parameters, int param_amount) {
+  //printf("popea parametro \n");
+  int counter = 0;
+  if (param_amount > 6) {
+    ASTNode * aux = parameters;
+    while (aux != NULL && counter < 6) {
+      aux = aux -> next_statement;
+      counter++;
+    }
+    while (aux != NULL) {
+      add_instruction(create_instructionNode(POP, NULL , NULL, NULL));
+      aux = aux -> next_statement; 
+    }
   }
 }
 
@@ -131,16 +244,21 @@ void create_push_instructions(ASTNode * parameters) {
   Creates the needed instructions to make a call to a method.
 */
 InstructionNode * create_instructions_method_call(ASTNode * root) {
-  printf("encuentra un method_call \n");
-  create_push_instructions(root -> right_child);
-  InstructionNode * call_ins = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
-  add_instruction(call_ins);
-  return call_ins;
-}
-
-InstructionNode * create_extern_instruction(FunctionNode * fun) {
-  VarNode * fun_data = create_temporal_with_id(fun -> id);
-  return create_instructionNode(EXTERN, fun_data, NULL, NULL);
+  //printf("encuentra un method_call \n");
+  InstructionNode * call;
+  if (root -> function_data -> is_extern) {
+    create_extern_push_instructions(root -> right_child, root -> function_data -> param_amount);
+    call = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
+    add_instruction(call);
+    create_extern_pop_instructions(root -> right_child, root -> function_data -> param_amount);
+  }
+  else {
+    create_push_instructions(root -> right_child);
+    call = create_instructionNode(CALL, create_temporal(), create_temporal_with_id(root -> function_data -> id), NULL);
+    add_instruction(call);
+    create_pop_instructions(root -> right_child);
+  }
+  return call;
 }
 
 /*
@@ -190,6 +308,29 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
 }
 
 /*
+  Prints VarNode information.
+*/
+void print_varnode(VarNode * var) {
+  switch (var -> kind) {
+    case _local: case _parameter:
+      printf("                                              %s  %s  offset: %d\n", var -> id, get_varnode_kind_string(var), var -> offset);
+      break;
+    case _temporal:
+      printf("                                              %s  %s  offset: %d    value: %s\n", var -> id, get_varnode_kind_string(var), var -> offset, get_temporal_string(var));
+      break;
+    case _label:
+        printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
+      break;
+    case _global:
+      printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
+      break;
+    default:
+      printf(" ERROR, unknown varnode type \n");
+      break;
+  }
+}
+
+/*
   Prints a single instruction on cosole.
 */
 void print_instruction(InstructionNode * i) {
@@ -200,23 +341,51 @@ void print_instruction(InstructionNode * i) {
   strcpy(op2_string, get_temporal_string(i -> op2));
   strcpy(result_string, get_temporal_string(i -> result));
   switch (i -> operation) {
+    case BEGIN_FUN:
+      printf("\n\n========================  START OF INSTRUCTIONS OF A NEW FUNCTION  ======================\n\n");
+      printf("\t%s   %s", get_operation_string(i), result_string);
+      //print_varnode(i -> result);
+      printf("                          %s  %s   max_offset: %d\n", i -> result -> id, get_varnode_kind_string(i -> result), i -> result -> offset);
+      printf("\n\n");
+      break;
     case END_FUN:
-      printf("\t%s   %s\n\n", get_operation_string(i), result_string);
+      printf("\t%s   %s\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
     case LABEL:
       printf("%s\n", result_string);
+      //print_varnode(i -> result);
       break;
-    case BEGIN_FUN: case RETURN: case EXTERN:
+    case RETURN:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
-    case PUSH: case POP: case JMP: 
+    case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
       printf("\t%s   %s\n", get_operation_string(i), result_string);
+      print_varnode(i -> result);
       break;
-    case ASSIGN: case JE: case NEGAT: case CALL: 
+    case ASSIGN: case NEGAT: case CALL: 
       printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
+      print_varnode(i -> result);
+      print_varnode(i -> op1);
       break;
     case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
       printf("\t%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
+      print_varnode(i -> result);
+      print_varnode(i -> op1);
+      print_varnode(i -> op2);
+      break;
+    case JMP: 
+      printf("\t%s   %s\n", get_operation_string(i), result_string);
+      //print_varnode(i -> result);
+      break;
+    case JE:
+      printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
+      //print_varnode(i -> result);
+      print_varnode(i -> op1);
+      break;
+    case POP: case BREAK:
+      printf("\t%s\n\n", get_operation_string(i));
       break;
     default:
       printf("\tUNKNOWN INSTRUCTION\n");
@@ -243,14 +412,18 @@ void print_instructions() {
 void generate_fun_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
-    if (aux -> body == NULL) {
-      add_instruction(create_extern_instruction(aux));
-    }
-    else {
-      add_instruction(create_instructionNode(BEGIN_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+    InstructionNode * begin_ins = NULL;
+    max_offset_current_function = aux -> max_offset;
+    printf("FUNCION: %s   max_offset without temporals: %d\n", aux -> id, aux -> max_offset);
+    if (!aux -> is_extern) {
+      begin_ins = create_instructionNode(BEGIN_FUN, create_label_with_id(aux -> id), NULL, NULL);
+      add_instruction(begin_ins);
       generate_intermediate_code(aux -> body, aux -> id);
-      add_instruction(create_instructionNode(END_FUN, create_temporal_with_id(aux -> id), NULL, NULL));
+      add_instruction(create_instructionNode(END_FUN, create_label_with_id(aux -> id), NULL, NULL));
+      aux -> max_offset = max_offset_current_function;
+      begin_ins -> result -> offset = max_offset_current_function;
     }
+    printf("FUNCION: %s   Final max_offset: %d \n\n", aux -> id, aux -> max_offset);
     aux = aux -> next;
   }
 }

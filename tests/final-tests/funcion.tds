@@ -1,0 +1,27 @@
+program
+  begin
+
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+    integer sum (integer y, integer x)
+      begin
+        return y+x;
+      end
+
+    integer sub (integer x, integer y)
+      begin
+        return x-y;
+      end
+
+    integer  main()
+      begin
+        integer w,x,y,z;
+        x = sum(2,2);
+        print(x); //4
+        y = 8;
+        z = sum (x, sub(y,2));    //sum(4, sub(8,2)) = 10
+        print(z); //10
+        return z;
+      end
+  end

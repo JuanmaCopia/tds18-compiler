@@ -1,0 +1,48 @@
+program
+  begin
+    
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+
+    integer fibonacci (integer n)
+      begin
+        integer x,y,i,sum;
+        if (n<2) then
+          begin
+            if (i==1)then
+              begin
+                return 1;
+              end
+            else
+              begin
+                return 0;
+              end
+          end
+        else
+          begin
+            //x e y almacenaran los ultimos dos terminos
+            x = 0;
+            y = 1;
+            i = 1; //se utiliza para ciclar
+            n= n+1;
+            while(i<n || i==n)
+              begin
+                print (x);
+                sum = x+y;
+                y = x;
+                x = sum;
+                i = i+1;
+              end
+            return sum;
+          end
+      end
+
+    integer  main()
+      begin
+        integer w;
+        w = fibonacci(20);
+        print (w);
+        return w;
+      end
+  end

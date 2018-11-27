@@ -1,0 +1,109 @@
+program
+  begin
+
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+    integer fibonacci (integer n)
+      begin
+        integer x,y,i,sum;
+        if (n<1 || n==1) then
+          begin
+            return 1;
+          end
+        else
+          begin
+            //x e y almacenaran los ultimos dos terminos
+            x = 1;
+            y = 1;
+            i = 2; //se utiliza para ciclar
+            while(i<n || i==n)
+              begin
+                sum = x+y;
+                y = x;
+                x = sum;
+                i = i+1;
+              end
+            return sum;
+          end
+      end
+
+      integer potencia (integer x, integer n)
+      begin
+        integer i,r;
+        i = 1;
+        r = x;
+        while (i<n)
+          begin
+            r = r*x;
+            i = i+1;
+          end
+        return r;
+      end
+
+    integer factorial (integer v)
+      begin
+        integer limit,c,fact;
+        limit = 15;
+        if ( v > limit) then
+          begin 
+            return (-1);
+          end
+        else 
+          begin 
+            c = 0;
+            fact = 1;
+            while (c<v)
+              begin
+                c = c+1;
+                fact = fact*c;
+              end
+            return fact;
+          end
+      end
+
+    integer sum (integer y, integer x)
+      begin
+        return y + x;
+      end
+
+    //compara dos numeros, si el primero es mayor retorna true en caso contrario, false
+    bool mayor (integer y, integer x)
+      begin
+        if (y > x) then
+          begin
+            return true;
+          end
+        else
+          begin
+            return false;
+          end
+      end
+
+    integer main()
+      begin
+        integer x,y,z,w,v;
+        bool a;
+        x = 2;
+        y = fibonacci(6); //13
+        print(y); 
+        z = potencia(x,factorial(3));  //potencia(2,6) = 64
+        print(z);
+        w = (5 + (2*2)) / 3; {3}
+        print(w);
+        a = mayor(x+10,z-10); {false}
+        if (a) then
+          begin
+            z = fibonacci(potencia(2,4)); //61
+            print(z);
+            return z;
+          end
+        else
+          begin
+            x = potencia(sum(3,3),fibonacci(2)); //36
+            print(x);
+            return x;
+          end
+      end
+  end
+
