@@ -1,0 +1,107 @@
+program
+   begin
+
+
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+    integer potencia (integer x, integer n)
+      begin
+        integer i,r;
+        i = 1;
+        r = x;
+        while (i<n)
+        begin
+        	r = r*x;
+        	i = i+1;
+        end
+        return r;
+      end
+
+    // retorna el factorial de v
+    integer factorial (integer v)
+    	begin
+      	integer limit,c,fact;
+      	limit = 15;
+      	if ( v > limit) then
+        	begin 
+          	return (-1);
+        	end
+      	else 
+        	begin 
+          	c = 0;
+          	fact = 1;
+          	while (c<v)
+            	begin
+              	  c = c+1;
+              	  fact = fact*c;
+            	end
+          	return fact;
+        	end
+    	end
+
+    // retorna el n esimo primo
+    integer nthprime (integer n) 
+      begin
+        integer i, divs;
+        bool divides;
+        i = 0;
+        divs = 2;
+        n = n+1;
+        while ( n > 0) 
+          begin
+            divides = false; 
+            i = i + 1;
+            while ( ! divides && divs < i) 
+              begin
+                if ((i%divs) == 0) then
+                  begin
+                    divides = true;
+                  end
+                else
+                  begin
+                    divs = divs+1;
+                  end
+              end
+            divs = 2;
+            if (!divides) then
+              begin
+                n = n-1;
+              end
+          end
+        return i;
+    end
+
+    // retorna el maximo comun divisor de a y b,
+    integer gcd (integer a, integer b) 
+      begin
+        integer i, result;
+        i = 1;
+        result = i;
+        while ( i < (a+b)) 
+          begin
+            if (((a % i) == 0) &&  ((b%i) ==0 )) then
+              begin
+                result = i;
+              end
+            i = i+1;
+          end
+        return result;
+      end
+
+    void main()
+      begin
+        integer aux, result;
+        printGuiones( );
+        result = gcd(factorial(3),factorial(4)); //gcd(6,24) = 6
+        print(result);
+        printGuiones( );
+        aux = nthprime(gcd(factorial(3),factorial(4))); //nthprime(6) = 13
+        print(aux);
+        printGuiones( );
+        aux = potencia(3,nthprime(gcd(factorial(3),factorial(4)))); //potencia(3,13) = 1594323
+        print(aux);
+        printGuiones( );
+        return;
+      end
+  end

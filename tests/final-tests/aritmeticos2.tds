@@ -1,0 +1,41 @@
+program
+	begin
+	
+        void printGuiones( ) extern;
+        void print(integer n) extern;
+
+
+        integer main()
+		begin
+			integer a, b, c, d, e;
+			a = -5;
+			b = 2;
+			c = 10;
+			d = -3;
+			e = a + b;
+			print(e);
+			e = b + a;
+			print(e);
+			e = a - b;
+			print(e);
+			e = b - a;
+			print(e);
+			e = a * b;
+			print(e);
+			e = a * d;
+			print(e);
+			e = a / b;
+			print(e);
+			e = c / d;
+			print(e);
+			e = a / d;
+			print(e);
+			e = a % b;
+			print(e);
+			e = c % d;
+			print(e);
+			e = a % d;
+			print(e);
+			return e;
+		end
+	end

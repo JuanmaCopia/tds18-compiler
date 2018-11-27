@@ -1,0 +1,19 @@
+program
+  begin
+    
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+    integer sub (integer x, integer y)
+      begin
+        return x-y;
+      end
+
+    void main()
+      begin
+        integer x;
+        x = sub(10,2);
+        print(x); //8
+        return;
+      end
+  end

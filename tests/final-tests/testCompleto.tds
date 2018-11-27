@@ -1,0 +1,195 @@
+program
+begin
+
+    void printGuiones( ) extern;
+    void print(integer n) extern;
+
+
+    //Muestra los primenos "n" numeros de la serie de Fibonacci. 
+    integer fibonacci(integer n)
+      begin
+        integer i, term1, term2, nextTerm;
+        term1 = 0;
+        term2 = 1;
+        i = 1;
+        while (i < n)
+          begin
+            nextTerm = term1 + term2;
+            term1 = term2;
+            term2 = nextTerm;
+            i = i+1;
+          end
+        return term2;
+      end
+
+    // potencia de  x^n
+      integer potencia (integer x, integer n)
+      begin
+        integer i,r;
+        i = 1;
+        r = x;
+        while (i<n)
+        	begin
+        		r = r*x;
+        		i = i+1;
+        	end
+        return r;
+      end
+
+    // retorna el factorial de v
+    integer factorial (integer v)
+    	begin
+      	integer limit,c,fact;
+      	limit = 15;
+      	if ( v > limit) then
+        	begin 
+          	return(-1);
+        	end
+      	else 
+        	begin 
+          	c = 0;
+          	fact = 1;
+          	while (c<v)
+            	begin
+              	c = c+1;
+              	fact = fact*c;
+            	end
+          	return fact;
+        	end
+    	end
+
+    // retorna el n esimo primo
+    integer nthprime (integer n) 
+      begin
+        integer i, divs;
+        bool divides;
+        i = 0;
+        divs = 2;
+        n = n+1;
+        while ( n > 0) 
+          begin
+            divides = false; 
+            i = i + 1;
+            while ( ! divides && divs < i) 
+              begin
+                if ((i%divs) == 0) then
+                  begin
+                    divides = true;
+                  end
+                else
+                  begin
+                    divs = divs+1;
+                  end
+              end
+            divs = 2;
+            if (!divides) then
+              begin
+                n = n-1;
+              end
+          end
+        return i;
+    end
+
+    // retorna el maximo comun divisor de a y b,
+    integer gcd (integer a, integer b) 
+      begin
+        integer i, result;
+        i = 1;
+        result = i;
+        while ( i < (a+b)) 
+          begin
+            if (((a % i) == 0) &&  ((b%i) ==0 )) then
+              begin
+                result = i;
+              end
+            i = i+1;
+          end
+        return result;
+      end
+
+    void test()
+      begin
+        integer aux, result;
+        result = gcd(factorial(3),factorial(4)); //gcd(6,24) = 6
+        print( result);
+        aux = nthprime(gcd(factorial(3),factorial(4))); //nthprime(6) = 13
+        print( aux);
+        aux = potencia(3,nthprime(gcd(factorial(3),factorial(4)))); //potencia(3,13) = 1594323
+        print( aux);
+      end
+
+    // invoca test
+    void test1()
+      begin
+        integer aux;
+        aux = 2; 
+        test();
+        print(aux);
+      end
+
+    integer main()
+      begin
+        integer x, i, aux, res;
+        // test fibonacci 
+        printGuiones(); // printf("-----------")
+        x=5; //cantidad de veces que ejecutara la funcion
+        i = 0;
+        aux=1; // valor para invocar a la funcion
+        while (i<x)
+          begin
+            res = fibonacci(aux);
+            aux = aux + 1;
+            print( res);
+            i=i+1;
+          end      
+        // test factorial entero
+        printGuiones(); // printf("-----------")
+        x=4; // cantidad de veces que ejecutara la funcion
+        i = 0;
+        aux=3; // dato para invocar a la funcion
+        while (i<x)
+          begin
+            res = factorial(aux);
+            aux = aux + 1;
+            print( res);
+            i=i+1;
+          end
+        // test nthprime entero
+        printGuiones(); // printf("-----------")
+        x=10; // cantidad de veces que ejecutara la funcion
+        i = 0;
+        aux = 4;
+        while (i<x)
+          begin
+            res = nthprime(aux);
+            aux = aux + 1;
+            print( res);
+            i=i+1;
+          end
+        // test gcd entero    
+        printGuiones(); // printf("-----------")
+        x=3; // cantidad de veces que ejecutara la funcion
+        i = 0;
+        while (i<x)
+          begin 
+            print( gcd(8+i,2+i));
+            i=i+1;
+          end
+        // test potencia entero
+        printGuiones(); // printf("-----------")
+        x=3; // cantidad de veces que ejecutara la funcion
+        i = 0;
+        while (i<x)
+          begin
+            print( potencia(2+i,1+i) + 1);
+            i=i+1;
+          end
+        // test test
+        printGuiones(); // printf("-----------")
+        test();
+        // test test1 
+        printGuiones(); // printf("-----------")
+        test1();
+        return 1;
+      end
+end

@@ -1,0 +1,26 @@
+program
+	begin
+
+       void printGuiones( ) extern;
+       void print(integer n) extern;
+
+		integer main()
+			begin
+				integer x,y,w,z;
+				x = 4;
+				y = -2;
+				print(-x); //-4
+				print(-y); //2
+				print(-(-x)); //4
+				print(-(-y)); //-2
+				x = -4;
+				y = -3;
+				w = x%y;
+				print(w); //-1
+				z = y%x;
+				print(z); //-3
+				w = 4%(-3);
+				print(w); //1
+				return 1;
+			end
+	end
