@@ -12,3 +12,4 @@
 !assembly_code.c
 !externs.c
 executable
+build/
