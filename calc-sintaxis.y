@@ -1,4 +1,5 @@
 %{
+	
 #include "intermediate_code.c"
 #include "assembly_code.c"
 

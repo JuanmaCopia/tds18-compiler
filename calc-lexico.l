@@ -1,7 +1,7 @@
 %{
+
 #include "structs.c"
 #include "calc-sintaxis.tab.h"
-
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -16,6 +16,7 @@ void reset_yylloc_column() {
 	yylloc.first_column = 1;
 	yylloc.last_column = 1;
 }
+
 %}
 
 %option noyywrap
