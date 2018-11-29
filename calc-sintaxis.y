@@ -632,48 +632,8 @@ void add_parameter_to_list(ASTNode * list, ASTNode * new_param) {
 }
 
 /*
-	Frees the memory of an ASTNode and his related nodes.
+	Frees the memory of a VarNode and its related nodes.
 */
-void free_ASTNodes(ASTNode * node) {
-	if (node != NULL) {
-		free_ASTNodes(node -> left_child);
-		free_ASTNodes(node -> right_child);
-		free_ASTNodes(node -> next_statement);
-		free(node);
-		node = NULL;
-	}
-}
-
-/*
-	Removes the ASTNodes from the Tree that are not reachable because of a return statement.
-*/
-void erase_statements_after_return(ASTNode * body) {
-	ASTNode * root = body;
-	if (root != NULL) {
-		if (is_return_node(root)) {
-			free_ASTNodes(root -> next_statement);
-			root -> next_statement = NULL;
-		}
-		else {
-			erase_statements_after_return(root -> right_child);
-			erase_statements_after_return(root -> left_child);
-			erase_statements_after_return(root -> next_statement);
-		}
-	}
-}
-
-/*
-	Optimize each non extern function by removing the unreachable code caused by a return statements.
-*/
-void AST_optimization() {
-	FunctionNode * aux = fun_list_head;
-	while (aux != NULL) {
-		if (!aux -> is_extern)
-			erase_statements_after_return(aux -> body);
-		aux = aux -> next;
-	}
-}
-
 void free_varnode_memory(VarNode * v) {
 	if (v != NULL) {
 		VarNode * next = v -> next;
@@ -684,6 +644,9 @@ void free_varnode_memory(VarNode * v) {
 	}
 }
 
+/*
+	Frees the memory of a Parameter node and its related nodes.
+*/
 void free_parameter_memory(Parameter * p) {
 	if (p != NULL) {
 		Parameter * next = p -> next;
@@ -693,6 +656,9 @@ void free_parameter_memory(Parameter * p) {
 	}
 }
 
+/*
+	Frees the memory of an ASTNode and its related nodes.
+*/
 void free_astnode_memory(ASTNode * ast) {
 	if (ast != NULL) {
 		ASTNode * next_statement = ast -> next_statement;
@@ -715,6 +681,36 @@ void free_function_memory(FunctionNode * f) {
 		free(f);
 		f = NULL;
 		free_function_memory(next);
+	}
+}
+
+/*
+	Removes the ASTNodes from the Tree that are not reachable because of a return statement.
+*/
+void erase_statements_after_return(ASTNode * body) {
+	ASTNode * root = body;
+	if (root != NULL) {
+		if (is_return_node(root)) {
+			free_astnode_memory(root -> next_statement);
+			root -> next_statement = NULL;
+		}
+		else {
+			erase_statements_after_return(root -> right_child);
+			erase_statements_after_return(root -> left_child);
+			erase_statements_after_return(root -> next_statement);
+		}
+	}
+}
+
+/*
+	Optimize each non extern function by removing the unreachable code caused by a return statements.
+*/
+void AST_optimization() {
+	FunctionNode * aux = fun_list_head;
+	while (aux != NULL) {
+		if (!aux -> is_extern)
+			erase_statements_after_return(aux -> body);
+		aux = aux -> next;
 	}
 }
 
