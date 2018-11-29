@@ -674,20 +674,6 @@ void AST_optimization() {
 	}
 }
 
-void free_astnode_memory(ASTNode * ast) {
-	if (ast != NULL) {
-		ASTNode * next_statement = ast -> next_statement;
-		ASTNode * left_child = ast -> left_child;
-		ASTNode * right_child = ast -> right_child;
-		free_varnode_memory(ast -> var_data);
-		free(ast);
-		ast = NULL;
-		free_astnode_memory(left_child);
-		free_astnode_memory(right_child);
-		free_astnode_memory(next_statement);
-	}
-}
-
 void free_varnode_memory(VarNode * v) {
 	if (v != NULL) {
 		VarNode * next = v -> next;
@@ -704,6 +690,19 @@ void free_parameter_memory(Parameter * p) {
 		free(p);
 		p = NULL;
 		free_parameter_memory(next);
+	}
+}
+
+void free_astnode_memory(ASTNode * ast) {
+	if (ast != NULL) {
+		ASTNode * next_statement = ast -> next_statement;
+		ASTNode * left_child = ast -> left_child;
+		ASTNode * right_child = ast -> right_child;
+		free(ast);
+		ast = NULL;
+		free_astnode_memory(left_child);
+		free_astnode_memory(right_child);
+		free_astnode_memory(next_statement);
 	}
 }
 
