@@ -1,0 +1,17 @@
+program
+begin
+
+	void print(integer x) extern;
+	void printBool(bool x) extern;
+
+
+void main()
+	begin
+		integer result;
+        bool result2;
+        result = 10 + 2;
+        result2 = true || false;
+        print(result);
+        printBool(result2);
+	end
+end
