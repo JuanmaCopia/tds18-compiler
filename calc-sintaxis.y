@@ -632,15 +632,55 @@ void add_parameter_to_list(ASTNode * list, ASTNode * new_param) {
 }
 
 /*
-	Frees the memory of an ASTNode and his related nodes.
+	Frees the memory of a VarNode and its related nodes.
 */
-void free_ASTNodes(ASTNode * node) {
-	if (node != NULL) {
-		free_ASTNodes(node -> left_child);
-		free_ASTNodes(node -> right_child);
-		free_ASTNodes(node -> next_statement);
-		free(node);
-		node = NULL;
+void free_varnode_memory(VarNode * v) {
+	if (v != NULL) {
+		VarNode * next = v -> next;
+		free(v -> string_offset);
+		free(v);
+		v = NULL;
+		free_varnode_memory(next);
+	}
+}
+
+/*
+	Frees the memory of a Parameter node and its related nodes.
+*/
+void free_parameter_memory(Parameter * p) {
+	if (p != NULL) {
+		Parameter * next = p -> next;
+		free(p);
+		p = NULL;
+		free_parameter_memory(next);
+	}
+}
+
+/*
+	Frees the memory of an ASTNode and its related nodes.
+*/
+void free_astnode_memory(ASTNode * ast) {
+	if (ast != NULL) {
+		ASTNode * next_statement = ast -> next_statement;
+		ASTNode * left_child = ast -> left_child;
+		ASTNode * right_child = ast -> right_child;
+		free(ast);
+		ast = NULL;
+		free_astnode_memory(left_child);
+		free_astnode_memory(right_child);
+		free_astnode_memory(next_statement);
+	}
+}
+
+void free_function_memory(FunctionNode * f) {
+	if (f != NULL) {
+		FunctionNode * next = f -> next;
+		free_parameter_memory(f -> parameters);
+		free_varnode_memory(f -> enviroment);
+		free_astnode_memory(f -> body);
+		free(f);
+		f = NULL;
+		free_function_memory(next);
 	}
 }
 
@@ -651,7 +691,7 @@ void erase_statements_after_return(ASTNode * body) {
 	ASTNode * root = body;
 	if (root != NULL) {
 		if (is_return_node(root)) {
-			free_ASTNodes(root -> next_statement);
+			free_astnode_memory(root -> next_statement);
 			root -> next_statement = NULL;
 		}
 		else {
@@ -766,6 +806,7 @@ prog: _PROGRAM_ scope_open prog_body scope_close
 			printf("codigo intermedio generado \n");
 			print_instructions();
 			create_assembly_file(head, symbol_table -> variables);
+			free_function_memory(fun_list_head);
 		}
 ;
 
