@@ -265,7 +265,7 @@ InstructionNode * create_instructions_method_call(ASTNode * root) {
   Creates and adds to the list the corresponding intermediate code instructions for an statement.
 */
 InstructionNode * create_instructions(ASTNode * root) {
-  //printf("entra a la rec, este nodo es un %s\n", get_type_node_string(root->node_type));
+  printf("entra a la rec, este nodo es un %s\n", get_type_node_string(root->node_type));
   if (root != NULL) {
     switch (root -> node_type) {
       case _if:
@@ -285,7 +285,9 @@ InstructionNode * create_instructions(ASTNode * root) {
         return create_instruction_return(root);
         break;
       case _id:
+        printf("por crear id ins \n");
         return create_instructionNode(PSEUDO, root -> var_data, NULL, NULL);
+        printf("id instruction creada \n");
       case _literal:
         return create_instructionNode(PSEUDO, create_temporal_with_value(root -> data, root -> is_boolean), NULL, NULL);
       default: 
@@ -302,6 +304,7 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
   ASTNode * aux = root;
   InstructionNode * last_inst_created;
   while (aux != NULL) {
+    printf("crea instruccion \n");
     last_inst_created = create_instructions(aux);
     aux = aux -> next_statement;
   }
@@ -409,7 +412,7 @@ void print_instructions() {
 /*
   Generates the intermediate code for all functions of the program.
 */
-void generate_fun_code(FunctionNode * head) {
+void generate_functions_intermediate_code(FunctionNode * head) {
   FunctionNode * aux = head;
   while (aux != NULL) {
     InstructionNode * begin_ins = NULL;

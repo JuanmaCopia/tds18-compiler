@@ -46,6 +46,7 @@ char * create_asmlabel();
 char * get_current_end_asmlabel();
 char * create_end_asmlabel();
 char * create_constant_string(int constant);
+char * create_bool_string_const(bool value);
 
 void create_instruction_2op(char * instruction, char * op1, char * op2);
 void create_instruction_1op(char * instruction, char * op1);
@@ -53,14 +54,24 @@ void create_instruction_1op(char * instruction, char * op1);
 void generate_assembly_global_variables(VarNode * variables);
 void generate_assembly_begin_fun(InstructionNode * ins);
 void generate_assembly_assign(InstructionNode * ins);
-void generate_assembly_operation(InstructionNode * ins, char * operation_string);
+void generate_assembly_minus(InstructionNode * ins);
+void generate_assembly_plus(InstructionNode * ins);
+void generate_assembly_prod(InstructionNode * ins);
 void generate_assembly_and(InstructionNode * ins);
 void generate_assembly_or(InstructionNode * ins);
 void generate_assembly_end_fun(InstructionNode * ins);
-void generate_assembly_div(InstructionNode * ins, char * reg);
-void generate_assembly_bool_operation(InstructionNode * ins, char * operation_string);
+void generate_assembly_div(InstructionNode * ins);
+void generate_assembly_mod(InstructionNode * ins);
+void generate_assembly_greater(InstructionNode * ins);
+void generate_assembly_lesser(InstructionNode * ins);
+void generate_assembly_equals(InstructionNode * ins);
 void generate_assembly_compare(InstructionNode * ins);
 void generate_assembly_push(InstructionNode * ins);
 void generate_assembly_return(InstructionNode * ins);
 void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg);
 void generate_assembly_not(InstructionNode * ins);
+
+
+void set_value_on_register(VarNode * op, char * reg);
+void create_optimized_instruction(char * instruction, VarNode * op, char * reg);
+void create_optimized_instruction_1op(char * instruction, VarNode * op);
