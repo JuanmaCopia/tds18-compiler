@@ -147,7 +147,8 @@ void generate_assembly_code(InstructionNode * ins) {
 } 
 
 /*
-	
+	Creates an instruction with 2 operands, if the first operand is a const then it is direcly writed.
+	The second operand that is a registry.
 */
 void create_optimized_instruction(char * instruction, VarNode * op, char * reg) {
 	if (op != NULL) {
@@ -159,7 +160,7 @@ void create_optimized_instruction(char * instruction, VarNode * op, char * reg) 
 }
 
 /*
-	
+	Creates an instruction with 1 operand, if the first operand is a const then it is direcly writed.
 */
 void create_optimized_instruction_1op(char * instruction, VarNode * op) {
 	if (op != NULL) {
@@ -171,7 +172,8 @@ void create_optimized_instruction_1op(char * instruction, VarNode * op) {
 }
 
 /*
-	
+	Creates a MOVQ instruction with 2 operands, if the first operand is a const then it is direcly writed.
+	the second operand that is a registry.
 */
 void set_value_on_register(VarNode * op, char * reg) {
 	if (op != NULL) {
@@ -192,7 +194,7 @@ void generate_assembly_compare(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+	Generates the corresponding assembly instructions that executes a substraction.
 */
 void generate_assembly_minus(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -205,7 +207,7 @@ void generate_assembly_minus(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+	Generates the corresponding assembly instructions that executes an add.
 */
 void generate_assembly_plus(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -218,7 +220,7 @@ void generate_assembly_plus(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+	Generates the corresponding assembly instructions that executes a multiplication.
 */
 void generate_assembly_prod(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -231,7 +233,7 @@ void generate_assembly_prod(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+	Generates the corresponding assembly instructions that executes a greater than operation.
 */
 void generate_assembly_greater(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -246,7 +248,7 @@ void generate_assembly_greater(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+	Generates the corresponding assembly instructions that executes a lesser than operation.
 */
 void generate_assembly_lesser(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -261,7 +263,7 @@ void generate_assembly_lesser(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+	Generates the corresponding assembly instructions that executes an equals operation.
 */
 void generate_assembly_equals(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -276,7 +278,7 @@ void generate_assembly_equals(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes a DIV or a MOD operation.
+	Generates the corresponding assembly instructions that executes a DIV operation.
 */
 void generate_assembly_div(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -292,7 +294,7 @@ void generate_assembly_div(InstructionNode * ins) {
 }
 
 /*
-	Generates the corresponding assembly instructions that executes a DIV or a MOD operation.
+	Generates the corresponding assembly instructions that executes a MOD operation.
 */
 void generate_assembly_mod(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
@@ -457,7 +459,7 @@ char * create_constant_string(int constant) {
 }
 
 /*
-	Returns a string that represents a constant in assembler. 
+	Returns a string that represents a boolean constant in assembler. 
 */
 char * create_bool_string_const(bool value) {
 	char constant_string[64];
