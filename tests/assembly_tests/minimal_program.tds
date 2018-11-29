@@ -3,11 +3,17 @@ begin
 
 	void print(integer x) extern;
 	void printBool(bool x) extern;
-	integer sum(integer a, integer b) extern;
-	void print2(integer a, integer b) extern;
 
-void main()
+
+integer main()
 	begin
-		print2(sum(1,2), sum(8,1));
+		integer a,b,c;
+		a = 15;
+		return a;
+		if (a == 15) then begin
+			print(a);
+		end
+		c = 40;
+		print(c);
 	end
 end
