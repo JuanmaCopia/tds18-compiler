@@ -1,18 +1,16 @@
 if [ $# -eq 0 ]
   then
-    echo "No program code supplied"
+    echo "No source code supplied"
   else
-    echo "-------------- compilando...-------------"
-    mv assembly.s assembly.s.save
-    ./parser.out $1
+    ./build/parser.out $1
     if [ -e assembly.s ] 
       then
-        echo "-------------- assembler generado  -----------"
-        gcc -g -o executable assembly.s externs.c
-        echo "-------------- ejecutable generado  ----------"
-        echo "-------------- corriendo el programa  --------"
-        ./executable
+        gcc -g -o build/executable assembly.s src/externs.c
+        mv assembly.s ./build
+        ./build/executable
       else
-        echo "----------------------------------------------"
+        echo " "
+        echo "------------------- COMPILATION ERRORS --------------------"
+        echo " "
     fi
 fi
