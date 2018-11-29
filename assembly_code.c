@@ -53,19 +53,19 @@ void generate_assembly_code(InstructionNode * ins) {
 	if (ins != NULL)
 		switch (ins -> operation) {
 			case PLUS:
-				generate_assembly_operation(ins, ADD);
+				generate_assembly_plus(ins);
 				break;
 			case MINUS:
-				generate_assembly_operation(ins, SUB);
+				generate_assembly_minus(ins);
 				break;
 			case PROD:
-				generate_assembly_operation(ins, IMUL);
+				generate_assembly_prod(ins);
 				break;
 			case DIV:
-				generate_assembly_div(ins, RAX);
+				generate_assembly_div(ins);
 				break;
 			case EQUALS:
-				generate_assembly_bool_operation(ins, SETE);
+				generate_assembly_equals(ins);
 				break;
 			case AND:
 				generate_assembly_and(ins);
@@ -74,13 +74,13 @@ void generate_assembly_code(InstructionNode * ins) {
 				generate_assembly_or(ins);
 				break;
 			case GREATER_THAN:
-				generate_assembly_bool_operation(ins, SETG);
+				generate_assembly_greater(ins);
 				break;
 			case LESSER_THAN:
-				generate_assembly_bool_operation(ins, SETL);
+				generate_assembly_lesser(ins);
 				break;
 			case MOD:
-				generate_assembly_div(ins, RDX);
+				generate_assembly_mod(ins);
 				break;
 			case BEGIN_FUN:
 				generate_assembly_begin_fun(ins);
@@ -147,87 +147,191 @@ void generate_assembly_code(InstructionNode * ins) {
 } 
 
 /*
+	
+*/
+void create_optimized_instruction(char * instruction, VarNode * op, char * reg) {
+	if (op != NULL) {
+		if (op -> is_defined)
+			create_instruction_2op(instruction, create_constant_string(op -> value), reg);
+		else
+			create_instruction_2op(instruction, op -> string_offset, reg);
+	} 
+}
+
+/*
+	
+*/
+void create_optimized_instruction_1op(char * instruction, VarNode * op) {
+	if (op != NULL) {
+		if (op -> is_defined)
+			create_instruction_1op(instruction, create_constant_string(op -> value));
+		else
+			create_instruction_1op(instruction, op -> string_offset);
+	} 
+}
+
+/*
+	
+*/
+void set_value_on_register(VarNode * op, char * reg) {
+	if (op != NULL) {
+		if (op -> is_defined)
+			create_instruction_2op(MOVQ, create_constant_string(op -> value), reg);
+		else
+			create_instruction_2op(MOVQ, op -> string_offset, reg);
+	}
+}
+
+
+/*
 	Generates the corresponding assembly instructions that compares 2 operands.
 */
 void generate_assembly_compare(InstructionNode * ins) {
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_2op(MOVQ, ins -> op2 -> string_offset, RDX);
-	create_instruction_2op(COMP, RDX, RAX);
+	set_value_on_register(ins -> op1, RAX);
+	create_optimized_instruction(COMP, ins -> op2, RAX);
 }
 
 /*
 	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
 */
-void generate_assembly_operation(InstructionNode * ins, char * operation_string) {
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_2op(MOVQ, ins -> op2 -> string_offset, RDX);
-	create_instruction_2op(operation_string, RDX, RAX);
-	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+void generate_assembly_minus(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value - ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(SUB, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+	}
+}
+
+/*
+	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+*/
+void generate_assembly_plus(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value + ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(ADD, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+	}
+}
+
+/*
+	Generates the corresponding assembly instructions that executes an operation (MINUS, PLUS or PROD) with 2 operands.
+*/
+void generate_assembly_prod(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value * ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(IMUL, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+	}
 }
 
 /*
 	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
 */
-void generate_assembly_bool_operation(InstructionNode * ins, char * operation_string) {
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_2op(MOVQ, create_constant_string(0), RDX);
-	create_instruction_2op(COMP, ins -> op2 -> string_offset, RAX);
-	create_instruction_1op(operation_string, DL);
-	create_instruction_2op(MOVQ, RDX, RAX);
-	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+void generate_assembly_greater(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_bool_string_const(ins -> op1 -> value > ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(COMP, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, "$0", RDX);
+		create_instruction_1op(SETG, DL);
+		create_instruction_2op(MOVQ, RDX, ins -> result -> string_offset);
+	}
+}
+
+/*
+	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+*/
+void generate_assembly_lesser(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_bool_string_const(ins -> op1 -> value < ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(COMP, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, "$0", RDX);
+		create_instruction_1op(SETL, DL);
+		create_instruction_2op(MOVQ, RDX, ins -> result -> string_offset);
+	}
+}
+
+/*
+	Generates the corresponding assembly instructions that executes a logical operation (GREATER or LESSER) with 2 operands.
+*/
+void generate_assembly_equals(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_bool_string_const(ins -> op1 -> value == ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(COMP, ins -> op2, RAX);
+		create_instruction_2op(MOVQ, "$0", RDX);
+		create_instruction_1op(SETE, DL);
+		create_instruction_2op(MOVQ, RDX, ins -> result -> string_offset);
+	}
 }
 
 /*
 	Generates the corresponding assembly instructions that executes a DIV or a MOD operation.
 */
-void generate_assembly_div(InstructionNode * ins, char * reg) {
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_1op(CQTO, "");
-	create_instruction_1op(IDIVQ, ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, reg, ins -> result -> string_offset);
+void generate_assembly_div(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value / ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		if (ins -> op2 -> is_defined)
+			create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
+		set_value_on_register(ins -> op1, RAX);
+		create_instruction_1op(CQTO, "");
+		create_instruction_1op(IDIVQ, ins -> op2 -> string_offset);
+		create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+	}
+}
+
+/*
+	Generates the corresponding assembly instructions that executes a DIV or a MOD operation.
+*/
+void generate_assembly_mod(InstructionNode * ins) {
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value % ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		if (ins -> op2 -> is_defined)
+			create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
+		set_value_on_register(ins -> op1, RAX);
+		create_instruction_1op(CQTO, "");
+		create_instruction_1op(IDIVQ, ins -> op2 -> string_offset);
+		create_instruction_2op(MOVQ, RDX, ins -> result -> string_offset);
+	}
 }
 
 /*
 	Generates the corresponding assembly instructions that executes an AND operation.
 */
 void generate_assembly_and(InstructionNode * ins) {
-	char * label_false = create_asmlabel();
-	char * label_true = create_asmlabel();
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_bool_string_const((bool) ins -> op1 -> value && (bool) ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		char * label_false = create_asmlabel();
+		char * label_true = create_asmlabel();
 		char * label_end = create_asmlabel();
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RDX);
-	create_instruction_2op(COMP, create_constant_string(0), RDX);
-	create_instruction_1op(JUMPE, label_false);
-	create_instruction_2op(MOVQ, ins -> op2 -> string_offset, RDX);
-	create_instruction_2op(COMP, create_constant_string(0), RDX);
-	create_instruction_1op(JUMPE, label_false);
-	create_instruction_1op(JUMP, label_true);
-	create_assembly_label(label_false);
-	create_instruction_2op(MOVQ, create_constant_string(0), ins -> result -> string_offset);
-	create_instruction_1op(JUMP, label_end);
-	create_assembly_label(label_true);
-	create_instruction_2op(MOVQ, create_constant_string(1), ins -> result -> string_offset);
-	create_instruction_1op(JUMP, label_end);
-	create_assembly_label(label_end);
+		set_value_on_register(ins -> op1, RDX);
+		create_instruction_2op(COMP, "$0", RDX);
+		create_instruction_1op(JUMPE, label_false);
+		set_value_on_register(ins -> op2, RDX);
+		create_instruction_2op(COMP, "$0", RDX);
+		create_instruction_1op(JUMPE, label_false);
+		create_instruction_1op(JUMP, label_true);
+		create_assembly_label(label_false);
+		create_instruction_2op(MOVQ, "$0", ins -> result -> string_offset);
+		create_instruction_1op(JUMP, label_end);
+		create_assembly_label(label_true);
+		create_instruction_2op(MOVQ, "$1", ins -> result -> string_offset);
+		create_instruction_1op(JUMP, label_end);
+		create_assembly_label(label_end);
+	}
 }
 
 /*
@@ -235,44 +339,43 @@ void generate_assembly_and(InstructionNode * ins) {
 */
 void generate_assembly_not(InstructionNode * ins) {
 	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_2op(XORQ, "$1", RAX);
-	create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+		create_instruction_2op(MOVQ, create_bool_string_const(!(bool)ins -> op1 -> value), ins -> result -> string_offset);
+	else {
+		set_value_on_register(ins -> op1, RAX);
+		create_instruction_2op(XORQ, "$1", RAX);
+		create_instruction_2op(MOVQ, RAX, ins -> result -> string_offset);
+	}
 }
 
 /*
 	Generates the corresponding assembly instructions that executes an OR operation.
 */
 void generate_assembly_or(InstructionNode * ins) {
-	char * label_false = create_asmlabel();
-	char * label_true = create_asmlabel();
-	char * label_end = create_asmlabel();
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	if (ins -> op2 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op2 -> value), ins -> op2 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, RAX);
-	create_instruction_2op(MOVQ, ins -> op2 -> string_offset, RDX);
-	create_instruction_2op(ADD, RDX, RAX);
-	create_instruction_2op(COMP, create_constant_string(0), RAX);
-	create_instruction_1op(JUMPE, label_false);
-	create_instruction_1op(JUMP, label_true);
-	create_assembly_label(label_false);
-	create_instruction_2op(MOVQ, create_constant_string(0), ins -> result -> string_offset);
-	create_instruction_1op(JUMP, label_end);
-	create_assembly_label(label_true);
-	create_instruction_2op(MOVQ, create_constant_string(1), ins -> result -> string_offset);
-	create_assembly_label(label_end);
+	if (ins -> op1 -> is_defined && ins -> op2 -> is_defined)
+		create_instruction_2op(MOVQ, create_bool_string_const((bool) ins -> op1 -> value || (bool) ins -> op2 -> value), ins -> result -> string_offset);
+	else {
+		char * label_false = create_asmlabel();
+		char * label_true = create_asmlabel();
+		char * label_end = create_asmlabel();
+		set_value_on_register(ins -> op1, RAX);
+		create_optimized_instruction(ADD, ins -> op2, RAX);
+		create_instruction_2op(COMP, "$0", RAX);
+		create_instruction_1op(JUMPE, label_false);
+		create_instruction_1op(JUMP, label_true);
+		create_assembly_label(label_false);
+		create_instruction_2op(MOVQ, "$0", ins -> result -> string_offset);
+		create_instruction_1op(JUMP, label_end);
+		create_assembly_label(label_true);
+		create_instruction_2op(MOVQ, "$1", ins -> result -> string_offset);
+		create_assembly_label(label_end);
+	}
 }
 
 /*
 	Generates the corresponding assembly instructions that executes an assignment.
 */
 void generate_assembly_assign(InstructionNode * ins) {
-	if (ins -> op1 -> is_defined)
-		create_instruction_2op(MOVQ, create_constant_string(ins -> op1 -> value), ins -> op1 -> string_offset);
-	create_instruction_2op(MOVQ, ins -> op1 -> string_offset, R10);
+	set_value_on_register(ins -> op1, R10);
 	create_instruction_2op(MOVQ, R10, ins -> result -> string_offset);
 }
 
@@ -281,9 +384,9 @@ void generate_assembly_assign(InstructionNode * ins) {
 */
 void generate_assembly_push(InstructionNode * ins) {
 	if (ins -> result -> is_defined)
-	create_instruction_1op(PUSH_, create_constant_string(ins -> result -> value));
+		create_instruction_1op(PUSH_, create_constant_string(ins -> result -> value));
 	else
-	create_instruction_1op(PUSH_, ins -> result -> string_offset);
+		create_instruction_1op(PUSH_, ins -> result -> string_offset);
 }
 
 /*
@@ -299,12 +402,7 @@ void generate_assembly_extern_param_passage(InstructionNode * ins, char * reg) {
 	Generates the corresponding assembly instructions that executes a return.
 */
 void generate_assembly_return(InstructionNode * ins) {
-	if (ins -> result != NULL) {
-		if (ins -> result -> is_defined)
-			create_instruction_2op(MOVQ, create_constant_string(ins -> result -> value), RAX);
-		else
-			create_instruction_2op(MOVQ, ins -> result -> string_offset, RAX);
-	}
+	set_value_on_register(ins -> result, RAX);
 	create_instruction_1op(JUMP, get_current_end_asmlabel());
 }
 
@@ -353,6 +451,20 @@ void create_instruction_1op(char * instruction, char * op1) {
 char * create_constant_string(int constant) {
 	char constant_string[64];
 	sprintf(constant_string, "$%d\0", constant);
+	char * res = malloc(strlen(constant_string));
+	sprintf(res, "%s", constant_string);
+	return res;
+}
+
+/*
+	Returns a string that represents a constant in assembler. 
+*/
+char * create_bool_string_const(bool value) {
+	char constant_string[64];
+	if (value)
+		sprintf(constant_string, "$%d\0", 1);
+	else
+		sprintf(constant_string, "$%d\0", 0);
 	char * res = malloc(strlen(constant_string));
 	sprintf(res, "%s", constant_string);
 	return res;
