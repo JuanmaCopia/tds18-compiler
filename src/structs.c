@@ -432,46 +432,46 @@ void print_instruction(InstructionNode * i) {
 			printf("                          %s  %s   max_offset: %d\n", i -> result -> id, get_varnode_kind_string(i -> result), i -> result -> offset);
 			printf("\n\n");
 			break;
-    	case END_FUN:
+		case END_FUN:
       		printf("\t%s   %s\n", get_operation_string(i), result_string);
       		print_varnode(i -> result);
       		break;
-    	case LABEL:
+		case LABEL:
       		printf("%s\n", result_string);
       		//print_varnode(i -> result);
       		break;
-    	case RETURN:
+		case RETURN:
       		printf("\t%s   %s\n", get_operation_string(i), result_string);
       		print_varnode(i -> result);
       		break;
-    	case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
+		case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
       		printf("\t%s   %s\n", get_operation_string(i), result_string);
       		print_varnode(i -> result);
       		break;
-    	case ASSIGN: case NEGAT: case CALL: 
+		case ASSIGN: case NEGAT: case CALL: 
       		printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
       		print_varnode(i -> result);
       		print_varnode(i -> op1);
       		break;
-    	case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
+		case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
       		printf("\t%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
       		print_varnode(i -> result);
       		print_varnode(i -> op1);
       		print_varnode(i -> op2);
       		break;
-    	case JMP: 
+		case JMP: 
       		printf("\t%s   %s\n", get_operation_string(i), result_string);
       		//print_varnode(i -> result);
       		break;
-    	case JE:
+		case JE:
       		printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
       		//print_varnode(i -> result);
       		print_varnode(i -> op1);
       		break;
-    	case POP: case BREAK:
+		case POP: case BREAK:
       		printf("\t%s\n\n", get_operation_string(i));
       		break;
-    	default:
+		default:
 			printf("\tUNKNOWN INSTRUCTION\n");
 			break;
   	}
@@ -488,14 +488,14 @@ void print_varnode(VarNode * var) {
 		case _temporal:
 			printf("                                              %s  %s  offset: %d    value: %s\n", var -> id, get_varnode_kind_string(var), var -> offset, get_temporal_string(var));
 			break;
-    	case _label:
-        	printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
-      		break;
-    	case _global:
-      		printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
-      		break;
-    	default:
-      		printf(" ERROR, unknown varnode type \n");
-      		break;
-  	}
+		case _label:
+			printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
+			break;
+		case _global:
+			printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
+			break;
+		default:
+			printf(" ERROR, unknown varnode type \n");
+			break;
+	}
 }
