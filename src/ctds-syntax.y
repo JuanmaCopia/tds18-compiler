@@ -12,8 +12,10 @@ int amount_open_enviroments = 0;                        // Quantity of currently
 char * error_message;                                   // Stores an error message to disply
 int current_local_offset = -8;                          // Holds the next offset for local variables to be used.
 int current_parameter_offset = 16;                      // Holds the next offset for function parameters to be used.
+int error_line_number;
 
-void yyerror();
+void yyerror(const char *str);
+void yyerror2(char *s, int line_number);
 int yylex();
 int get_line_number();
 int get_column_number();
@@ -299,6 +301,7 @@ bool are_parameters_equals(Parameter * formal_params, ASTNode * actual_params) {
 	while (formal_aux != NULL) {
 		if (actual_aux == NULL || formal_aux -> is_boolean != actual_aux -> is_boolean) {
 			error_message = "Error: Parameters in function call doesnt match";
+			error_line_number = actual_aux -> line_num;
 			return false;
 		}
 		formal_aux = formal_aux -> next;
@@ -306,6 +309,7 @@ bool are_parameters_equals(Parameter * formal_params, ASTNode * actual_params) {
 	}
 	if (actual_aux != NULL) {
 		error_message = "Error: Parameters in function call doesnt match";
+		error_line_number = actual_aux -> line_num;
 		return false;
 	}
 	return true;
@@ -560,8 +564,10 @@ ReturnType get_expression_type(ASTNode * expr) {
 bool has_return(ASTNode * body) {
 	ASTNode * root = body;
 	if (root != NULL) {
-		if (is_return_node(root) && (root -> right_child != NULL))
+		if (is_return_node(root) && (root -> right_child != NULL)) {
+			error_line_number = root -> line_num;
 			return true;
+		}
 		return has_return(root -> next_statement) || has_return(root -> right_child) || has_return(root -> left_child);
 	}
 	return false;
@@ -577,6 +583,7 @@ bool check_return_types(ASTNode * body, ReturnType type) {
 		// base case
 		if (is_return_node(root)) {
 			if (get_expression_type(root -> right_child) != type) {
+				error_line_number = root -> line_num;
 				switch (type) {
 					case _boolean:
 						error_message = "Type Error: Boolean expression expected but Integer expression found";
@@ -741,7 +748,7 @@ void AST_optimization() {
 prog: _PROGRAM_ scope_open prog_body scope_close
 		{
 			if (!check_functions_return_types()) {
-				yyerror(error_message);
+				yyerror2(error_message, error_line_number);
 				return -1;
 			}
 			print_functions();
