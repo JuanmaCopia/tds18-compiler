@@ -185,7 +185,7 @@ extern {
 {START}({SIMPLE}|{COMPLEX})*{END}
 
 . { 
-	yyerror("Invalid symbol found");
+	printf("ERROR: Invalid symbol found\n");
 	yyterminate();
 }
 
