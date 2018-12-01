@@ -170,3 +170,4 @@ void free_function_memory(FunctionNode * f);
 void free_instruction_memory(InstructionNode * i);
 void print_instruction(InstructionNode * i);
 void print_varnode(VarNode * var);
+void print_instructions(InstructionNode * head);

@@ -43,7 +43,6 @@ VarNode * create_varnode_from_param(Parameter * param) {
 	new_varnode -> is_defined = false;
 	new_varnode -> offset = param -> offset;
 	new_varnode -> string_offset = create_string_offset(param -> offset);
-	printf("string offset de parametro generado: %s\n", new_varnode -> string_offset);
 	new_varnode -> kind = _parameter;
 	return new_varnode;
 }
@@ -475,6 +474,19 @@ void print_instruction(InstructionNode * i) {
 			printf("\tUNKNOWN INSTRUCTION\n");
 			break;
   	}
+}
+
+/*
+  Prints all the instructions on console.
+*/
+void print_instructions(InstructionNode * head) {
+  InstructionNode * aux = head;
+  printf("\n\n");
+  while (aux != NULL) {
+    print_instruction(aux);
+    aux = aux -> next;
+  }
+  printf("\n\n\n");
 }
 
 /*

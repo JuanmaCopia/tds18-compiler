@@ -75,7 +75,6 @@ ASTNode * create_AST_node(ASTNode * left_child, char op, ASTNode * right_child) 
 */
 ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
 	if (var_data == NULL) {
-		printf("Cannot create leave from null var.\n");
 		return NULL;
 	}
 	else {
@@ -111,13 +110,11 @@ VarNode * create_var(char * var_id) {
 	if (amount_open_enviroments == 1) {
 		new_var -> kind = _global;
 		new_var -> string_offset = create_global_string_offset(new_var -> id);
-		printf("string offset de global generado: %s\n", new_var -> string_offset);
 	}
 	else {
 		new_var -> kind = _local;
 		new_var -> offset = current_local_offset;
 		new_var -> string_offset = create_string_offset(current_local_offset);
-		printf("string offset de local generado: %s\n", new_var -> string_offset);
 		increase_local_offset();
 	}
 	return new_var;
@@ -160,16 +157,6 @@ void close_enviroment() {
 		symbol_table = symbol_table -> next;
 		amount_open_enviroments--;
 	}
-}
-
-/*
-	Sets a value to a varNode
-*/
-void set_value_to_varnode(VarNode * var_node, int value) {
-	if (var_node == NULL)
-		printf("Cant add value to a non-existent variable.\n");
-	else
-		var_node -> value = value;
 }
 
 /*
@@ -751,14 +738,8 @@ prog: _PROGRAM_ scope_open prog_body scope_close
 				yyerror2(error_message, error_line_number);
 				return -1;
 			}
-			print_functions();
 			AST_optimization();
-			printf("arbol optimizado \n");
-			print_functions();
-			printf("por generar codigo intermedio \n");
 			generate_functions_intermediate_code(fun_list_head);
-			printf("codigo intermedio generado \n");
-			print_instructions();
 			create_assembly_file(head, symbol_table -> variables);
 			free_function_memory(fun_list_head);
 			free_instruction_memory(head);
@@ -774,7 +755,6 @@ scope_open: _BEGIN_
 scope_close: _END_
 		{
 			temporal_enviroment = symbol_table -> variables;
-			print_symbol_table();
 			close_enviroment();
 		}
 ;
