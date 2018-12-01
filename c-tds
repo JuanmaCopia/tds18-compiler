@@ -10,7 +10,5 @@ if [ $# -eq 0 ]
         ./build/executable
       else
         echo " "
-        echo "------------------- COMPILATION ERRORS --------------------"
-        echo " "
     fi
 fi
