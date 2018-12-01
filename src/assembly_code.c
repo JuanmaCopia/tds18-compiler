@@ -452,7 +452,7 @@ void create_instruction_1op(char * instruction, char * op1) {
 */
 char * create_constant_string(int constant) {
 	char constant_string[64];
-	sprintf(constant_string, "$%d\0", constant);
+	sprintf(constant_string, "$%d", constant);
 	char * res = malloc(strlen(constant_string));
 	sprintf(res, "%s", constant_string);
 	return res;
@@ -464,9 +464,9 @@ char * create_constant_string(int constant) {
 char * create_bool_string_const(bool value) {
 	char constant_string[64];
 	if (value)
-		sprintf(constant_string, "$%d\0", 1);
+		sprintf(constant_string, "$%d", 1);
 	else
-		sprintf(constant_string, "$%d\0", 0);
+		sprintf(constant_string, "$%d", 0);
 	char * res = malloc(strlen(constant_string));
 	sprintf(res, "%s", constant_string);
 	return res;
@@ -477,7 +477,7 @@ char * create_bool_string_const(bool value) {
 */
 char * create_asmlabel() {
 	char label_name[64];
-	sprintf(label_name, "asmlabel%d\0", label_amount);
+	sprintf(label_name, "asmlabel%d", label_amount);
 	char * res = malloc(strlen(label_name));
 	sprintf(res, "%s", label_name);
 	label_amount++;
@@ -489,7 +489,7 @@ char * create_asmlabel() {
 */
 char * create_end_asmlabel() {
 	char label_name[64];
-	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	sprintf(label_name, "endlabel%d", final_label_amount);
 	char * res = malloc(strlen(label_name));
 	sprintf(res, "%s", label_name);
 	final_label_amount++;
@@ -501,7 +501,7 @@ char * create_end_asmlabel() {
 */
 char * get_current_end_asmlabel() {
 	char label_name[64];
-	sprintf(label_name, "endlabel%d\0", final_label_amount);
+	sprintf(label_name, "endlabel%d", final_label_amount);
 	char * res = malloc(strlen(label_name));
 	sprintf(res, "%s", label_name);
 	return res;
