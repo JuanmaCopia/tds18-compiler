@@ -19,7 +19,7 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
 */
 char * create_string_offset(int offset) {
 	char offset_string[64];
-	sprintf(offset_string, "%d(%rbp)\0", offset);
+	sprintf(offset_string, "%d(%crbp)", offset, '%');
 	char * res = malloc(strlen(offset_string));
 	sprintf(res, "%s", offset_string);
 	return res;
@@ -30,7 +30,7 @@ char * create_string_offset(int offset) {
 */
 char * create_global_string_offset(char * var_id) {
 	char offset_string[64];
-	sprintf(offset_string, "%s(%s)\0", var_id, "%rip");
+	sprintf(offset_string, "%s(%s)", var_id, "%rip");
 	char * res = malloc(strlen(offset_string));
 	sprintf(res, "%s", offset_string);
 	return res;
@@ -240,7 +240,7 @@ char * get_operation_string(InstructionNode * i) {
 */
 VarNode * create_label() {
 	char label_name[128];
-	sprintf(label_name, "label%d\0", label_quantity);
+	sprintf(label_name, "label%d", label_quantity);
 	char * res = malloc(strlen(label_name));
 	sprintf(res, "%s", label_name);
 	VarNode * new_node = create_var_node();
