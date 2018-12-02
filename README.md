@@ -15,8 +15,8 @@ HOW TO BUILD THE COMPILER:
 HOW TO RUN TESTS:
     
     ERROR TESTS:
-    ./run_compilation_errors_test.sh
+        ./run_compilation_errors_test.sh
     
     FINAL TESTS:
-    ./run_final_tests.sh
+        ./run_final_tests.sh
     
