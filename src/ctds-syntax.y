@@ -1107,7 +1107,7 @@ expr: _ID_
 			if(is_boolean_expression($2))
 				$$ = create_AST_node(NULL, '!', $2);
 			else{
-				yyerror("Type error: cannot applicants boolean operator to a non boolean expression");
+				yyerror("Type error: boolean expressions expected but integer expression found");
 				return -1;
 			}
 		}
