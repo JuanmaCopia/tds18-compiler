@@ -12,8 +12,10 @@ int amount_open_enviroments = 0;                        // Quantity of currently
 char * error_message;                                   // Stores an error message to disply
 int current_local_offset = -8;                          // Holds the next offset for local variables to be used.
 int current_parameter_offset = 16;                      // Holds the next offset for function parameters to be used.
+int error_line_number;
 
-void yyerror();
+void yyerror(const char *str);
+void yyerror2(char *s, int line_number);
 int yylex();
 int get_line_number();
 int get_column_number();
@@ -73,7 +75,6 @@ ASTNode * create_AST_node(ASTNode * left_child, char op, ASTNode * right_child) 
 */
 ASTNode * create_AST_leave_from_VarNode(VarNode * var_data) {
 	if (var_data == NULL) {
-		printf("Cannot create leave from null var.\n");
 		return NULL;
 	}
 	else {
@@ -109,13 +110,11 @@ VarNode * create_var(char * var_id) {
 	if (amount_open_enviroments == 1) {
 		new_var -> kind = _global;
 		new_var -> string_offset = create_global_string_offset(new_var -> id);
-		printf("string offset de global generado: %s\n", new_var -> string_offset);
 	}
 	else {
 		new_var -> kind = _local;
 		new_var -> offset = current_local_offset;
 		new_var -> string_offset = create_string_offset(current_local_offset);
-		printf("string offset de local generado: %s\n", new_var -> string_offset);
 		increase_local_offset();
 	}
 	return new_var;
@@ -158,16 +157,6 @@ void close_enviroment() {
 		symbol_table = symbol_table -> next;
 		amount_open_enviroments--;
 	}
-}
-
-/*
-	Sets a value to a varNode
-*/
-void set_value_to_varnode(VarNode * var_node, int value) {
-	if (var_node == NULL)
-		printf("Cant add value to a non-existent variable.\n");
-	else
-		var_node -> value = value;
 }
 
 /*
@@ -299,6 +288,7 @@ bool are_parameters_equals(Parameter * formal_params, ASTNode * actual_params) {
 	while (formal_aux != NULL) {
 		if (actual_aux == NULL || formal_aux -> is_boolean != actual_aux -> is_boolean) {
 			error_message = "Error: Parameters in function call doesnt match";
+			error_line_number = actual_aux -> line_num;
 			return false;
 		}
 		formal_aux = formal_aux -> next;
@@ -306,6 +296,7 @@ bool are_parameters_equals(Parameter * formal_params, ASTNode * actual_params) {
 	}
 	if (actual_aux != NULL) {
 		error_message = "Error: Parameters in function call doesnt match";
+		error_line_number = actual_aux -> line_num;
 		return false;
 	}
 	return true;
@@ -560,8 +551,10 @@ ReturnType get_expression_type(ASTNode * expr) {
 bool has_return(ASTNode * body) {
 	ASTNode * root = body;
 	if (root != NULL) {
-		if (is_return_node(root) && (root -> right_child != NULL))
+		if (is_return_node(root) && (root -> right_child != NULL)) {
+			error_line_number = root -> line_num;
 			return true;
+		}
 		return has_return(root -> next_statement) || has_return(root -> right_child) || has_return(root -> left_child);
 	}
 	return false;
@@ -577,6 +570,7 @@ bool check_return_types(ASTNode * body, ReturnType type) {
 		// base case
 		if (is_return_node(root)) {
 			if (get_expression_type(root -> right_child) != type) {
+				error_line_number = root -> line_num;
 				switch (type) {
 					case _boolean:
 						error_message = "Type Error: Boolean expression expected but Integer expression found";
@@ -628,59 +622,6 @@ void add_parameter_to_list(ASTNode * list, ASTNode * new_param) {
 		while (aux -> next_statement != NULL)
 			aux = aux -> next_statement;
 		aux -> next_statement = new_param;
-	}
-}
-
-/*
-	Frees the memory of a VarNode and its related nodes.
-*/
-void free_varnode_memory(VarNode * v) {
-	if (v != NULL) {
-		VarNode * next = v -> next;
-		free(v -> string_offset);
-		free(v);
-		v = NULL;
-		free_varnode_memory(next);
-	}
-}
-
-/*
-	Frees the memory of a Parameter node and its related nodes.
-*/
-void free_parameter_memory(Parameter * p) {
-	if (p != NULL) {
-		Parameter * next = p -> next;
-		free(p);
-		p = NULL;
-		free_parameter_memory(next);
-	}
-}
-
-/*
-	Frees the memory of an ASTNode and its related nodes.
-*/
-void free_astnode_memory(ASTNode * ast) {
-	if (ast != NULL) {
-		ASTNode * next_statement = ast -> next_statement;
-		ASTNode * left_child = ast -> left_child;
-		ASTNode * right_child = ast -> right_child;
-		free(ast);
-		ast = NULL;
-		free_astnode_memory(left_child);
-		free_astnode_memory(right_child);
-		free_astnode_memory(next_statement);
-	}
-}
-
-void free_function_memory(FunctionNode * f) {
-	if (f != NULL) {
-		FunctionNode * next = f -> next;
-		free_parameter_memory(f -> parameters);
-		free_varnode_memory(f -> enviroment);
-		free_astnode_memory(f -> body);
-		free(f);
-		f = NULL;
-		free_function_memory(next);
 	}
 }
 
@@ -794,19 +735,14 @@ void AST_optimization() {
 prog: _PROGRAM_ scope_open prog_body scope_close
 		{
 			if (!check_functions_return_types()) {
-				yyerror(error_message);
+				yyerror2(error_message, error_line_number);
 				return -1;
 			}
-			print_functions();
 			AST_optimization();
-			printf("arbol optimizado \n");
-			print_functions();
-			printf("por generar codigo intermedio \n");
 			generate_functions_intermediate_code(fun_list_head);
-			printf("codigo intermedio generado \n");
-			print_instructions();
 			create_assembly_file(head, symbol_table -> variables);
 			free_function_memory(fun_list_head);
+			free_instruction_memory(head);
 		}
 ;
 
@@ -819,7 +755,6 @@ scope_open: _BEGIN_
 scope_close: _END_
 		{
 			temporal_enviroment = symbol_table -> variables;
-			print_symbol_table();
 			close_enviroment();
 		}
 ;
@@ -1172,7 +1107,7 @@ expr: _ID_
 			if(is_boolean_expression($2))
 				$$ = create_AST_node(NULL, '!', $2);
 			else{
-				yyerror("Type error: cannot applicants boolean operator to a non boolean expression");
+				yyerror("Type error: boolean expressions expected but integer expression found");
 				return -1;
 			}
 		}

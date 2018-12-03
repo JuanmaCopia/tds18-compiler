@@ -2,13 +2,12 @@ program
 begin
     integer x1,y1;
     bool a1,b1,c1;
-    integer main()
+    void main()
         begin
             integer x,y;
             bool a,b,c;
-            //x1 = -(b == true);
+            x1 = -(b == true);
             b = false;
-            //c1 = !x1;
             c = (b == true);
             x = 10 + y;
             y = 10 - 5;

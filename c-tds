@@ -2,15 +2,16 @@ if [ $# -eq 0 ]
   then
     echo "No source code supplied"
   else
-    ./build/parser.out $1
+    if [ -e ./build/parser.out ]
+     then
+        ./build/parser.out $1
+    fi
     if [ -e assembly.s ] 
       then
         gcc -g -o build/executable assembly.s src/externs.c
         mv assembly.s ./build
         ./build/executable
       else
-        echo " "
-        echo "------------------- COMPILATION ERRORS --------------------"
         echo " "
     fi
 fi

@@ -6,7 +6,6 @@ int temp_quantity = 0;
 int max_offset_current_function;
 char * get_type_node_string(TypeNode tn);
 InstructionNode * create_instructions(ASTNode * root);
-void print_instruction(InstructionNode * i);
 
 /*
   Adds an instruction to the list.
@@ -35,14 +34,13 @@ void increase_function_maxoffset() {
 */
 VarNode * create_temporal() {
   char temp_name[128];
-  sprintf(temp_name, "t%d\0", temp_quantity);
+  sprintf(temp_name, "t%d", temp_quantity);
   char * res = malloc(strlen(temp_name));
   sprintf(res, "%s", temp_name);
   VarNode * new_node = create_var_node();
   increase_function_maxoffset();
   new_node -> offset = max_offset_current_function;
   new_node -> string_offset = create_string_offset(new_node -> offset);
-  printf("string offset de temporal generado: %s\n", new_node -> string_offset);
   new_node -> id = res;
   new_node -> kind = _temporal;
   temp_quantity++;
@@ -63,7 +61,6 @@ VarNode * create_temporal_with_value(int value, bool is_boolean) {
   Creates the needed instructions to compute an operation.
 */
 InstructionNode * create_instruction_operation(ASTNode * root) {
-  //printf("encuentra un operador: %c \n",root -> data);
   InstructionNode * instruction;
   if (root -> left_child == NULL) {
     if (root -> data == '-') {
@@ -89,7 +86,6 @@ InstructionNode * create_instruction_operation(ASTNode * root) {
   Creates the needed instructions to compute an assignment statement.
 */
 InstructionNode * create_instruction_assignment(ASTNode * root) {
-  //printf("encuentra un assign \n");
   InstructionNode * instruction = create_instructionNode(ASSIGN, NULL, NULL, NULL);
   instruction -> result = create_instructions(root -> left_child) -> result;
   instruction -> op1 = create_instructions(root -> right_child) -> result;
@@ -112,7 +108,6 @@ void add_statements_block_instructions(ASTNode * root) {
   Creates the needed instructions to compute an if statement.
 */
 void create_instructions_if(ASTNode * root) {
-  //printf("encuentra un if \n");
   VarNode * cmp_temp = create_temporal();
   InstructionNode * condition = create_instructions(root -> left_child);
   add_instruction(create_instructionNode(CMP, cmp_temp, condition -> result, create_temporal_with_value(0, false)));
@@ -130,7 +125,6 @@ void create_instructions_if(ASTNode * root) {
   Creates the needed instructions to compute a while statement.
 */
 void create_instructions_while(ASTNode * root) {
-  //printf("encuentra un while \n");
   VarNode * cmp_temp = create_temporal();
   InstructionNode * begin_label_ins = create_instructionNode(LABEL, create_label(), NULL, NULL);
   add_instruction(begin_label_ins);
@@ -147,7 +141,6 @@ void create_instructions_while(ASTNode * root) {
   Creates the needed instructions to compute a return statement.
 */
 InstructionNode * create_instruction_return(ASTNode * root) {
-  //printf("encuentra un return \n");
   InstructionNode * return_ins;
   if (root -> right_child != NULL)
     return_ins = create_instructionNode(RETURN, create_instructions(root -> right_child) -> result, NULL, NULL);
@@ -174,7 +167,6 @@ int count_params(ASTNode * param_list) {
   Creates the needed instructions to make a push instruction.
 */
 void create_push_instructions(ASTNode * parameters) {
-  //printf("pushea parametro \n");
   int amount_parameters = count_params(parameters);
   ASTNode * reverse[amount_parameters];
   ASTNode * aux = parameters;
@@ -184,7 +176,6 @@ void create_push_instructions(ASTNode * parameters) {
     i--;
     aux = aux -> next_statement; 
   }
-  printf("\n\nel valor de i es: %d\n\n",i);
   i = 0;
   while ( i < amount_parameters) {
     add_instruction(create_instructionNode(PUSH, create_instructions(reverse[i]) -> result, NULL, NULL));
@@ -197,7 +188,6 @@ void create_push_instructions(ASTNode * parameters) {
   Creates a pop instruction for each parameter.
 */
 void create_pop_instructions(ASTNode * parameters) {
-  //printf("popea parametro \n");
   ASTNode * aux = parameters;
   while (aux != NULL) {
     add_instruction(create_instructionNode(POP, NULL , NULL, NULL));
@@ -206,10 +196,9 @@ void create_pop_instructions(ASTNode * parameters) {
 }
 
 /*
-  Creates the needed instructions to make a push instruction.
+  Creates the push instructions for an extern function call.
 */
 void create_extern_push_instructions(ASTNode * parameters, int param_amount) {
-  //printf("pushea parametro \n");
   int counter = 0;
   ASTNode * aux = parameters;
   while (aux != NULL && counter < 6) {
@@ -222,10 +211,9 @@ void create_extern_push_instructions(ASTNode * parameters, int param_amount) {
 }
 
 /*
-  Creates a pop instruction for each parameter.
+  Creates the pop instructions after an extern function call.
 */
 void create_extern_pop_instructions(ASTNode * parameters, int param_amount) {
-  //printf("popea parametro \n");
   int counter = 0;
   if (param_amount > 6) {
     ASTNode * aux = parameters;
@@ -244,7 +232,6 @@ void create_extern_pop_instructions(ASTNode * parameters, int param_amount) {
   Creates the needed instructions to make a call to a method.
 */
 InstructionNode * create_instructions_method_call(ASTNode * root) {
-  //printf("encuentra un method_call \n");
   InstructionNode * call;
   if (root -> function_data -> is_extern) {
     create_extern_push_instructions(root -> right_child, root -> function_data -> param_amount);
@@ -265,7 +252,6 @@ InstructionNode * create_instructions_method_call(ASTNode * root) {
   Creates and adds to the list the corresponding intermediate code instructions for an statement.
 */
 InstructionNode * create_instructions(ASTNode * root) {
-  printf("entra a la rec, este nodo es un %s\n", get_type_node_string(root->node_type));
   if (root != NULL) {
     switch (root -> node_type) {
       case _if:
@@ -285,13 +271,9 @@ InstructionNode * create_instructions(ASTNode * root) {
         return create_instruction_return(root);
         break;
       case _id:
-        printf("por crear id ins \n");
         return create_instructionNode(PSEUDO, root -> var_data, NULL, NULL);
-        printf("id instruction creada \n");
       case _literal:
         return create_instructionNode(PSEUDO, create_temporal_with_value(root -> data, root -> is_boolean), NULL, NULL);
-      default: 
-        printf("ERORRRRRRRRR \n");
     }
   }
   return NULL;
@@ -304,109 +286,9 @@ void generate_intermediate_code(ASTNode * root, char * fun_name) {
   ASTNode * aux = root;
   InstructionNode * last_inst_created;
   while (aux != NULL) {
-    printf("crea instruccion \n");
     last_inst_created = create_instructions(aux);
     aux = aux -> next_statement;
   }
-}
-
-/*
-  Prints VarNode information.
-*/
-void print_varnode(VarNode * var) {
-  switch (var -> kind) {
-    case _local: case _parameter:
-      printf("                                              %s  %s  offset: %d\n", var -> id, get_varnode_kind_string(var), var -> offset);
-      break;
-    case _temporal:
-      printf("                                              %s  %s  offset: %d    value: %s\n", var -> id, get_varnode_kind_string(var), var -> offset, get_temporal_string(var));
-      break;
-    case _label:
-        printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
-      break;
-    case _global:
-      printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
-      break;
-    default:
-      printf(" ERROR, unknown varnode type \n");
-      break;
-  }
-}
-
-/*
-  Prints a single instruction on cosole.
-*/
-void print_instruction(InstructionNode * i) {
-  char op1_string[12];
-  char op2_string[12];
-  char result_string[12];
-  strcpy(op1_string, get_temporal_string(i -> op1));
-  strcpy(op2_string, get_temporal_string(i -> op2));
-  strcpy(result_string, get_temporal_string(i -> result));
-  switch (i -> operation) {
-    case BEGIN_FUN:
-      printf("\n\n========================  START OF INSTRUCTIONS OF A NEW FUNCTION  ======================\n\n");
-      printf("\t%s   %s", get_operation_string(i), result_string);
-      //print_varnode(i -> result);
-      printf("                          %s  %s   max_offset: %d\n", i -> result -> id, get_varnode_kind_string(i -> result), i -> result -> offset);
-      printf("\n\n");
-      break;
-    case END_FUN:
-      printf("\t%s   %s\n", get_operation_string(i), result_string);
-      print_varnode(i -> result);
-      break;
-    case LABEL:
-      printf("%s\n", result_string);
-      //print_varnode(i -> result);
-      break;
-    case RETURN:
-      printf("\t%s   %s\n", get_operation_string(i), result_string);
-      print_varnode(i -> result);
-      break;
-    case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
-      printf("\t%s   %s\n", get_operation_string(i), result_string);
-      print_varnode(i -> result);
-      break;
-    case ASSIGN: case NEGAT: case CALL: 
-      printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
-      print_varnode(i -> result);
-      print_varnode(i -> op1);
-      break;
-    case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
-      printf("\t%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
-      print_varnode(i -> result);
-      print_varnode(i -> op1);
-      print_varnode(i -> op2);
-      break;
-    case JMP: 
-      printf("\t%s   %s\n", get_operation_string(i), result_string);
-      //print_varnode(i -> result);
-      break;
-    case JE:
-      printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
-      //print_varnode(i -> result);
-      print_varnode(i -> op1);
-      break;
-    case POP: case BREAK:
-      printf("\t%s\n\n", get_operation_string(i));
-      break;
-    default:
-      printf("\tUNKNOWN INSTRUCTION\n");
-      break;
-  }
-}
-
-/*
-  Prints all the instructions on console.
-*/
-void print_instructions() {
-  InstructionNode * aux = head;
-  printf("\n\n");
-  while (aux != NULL) {
-    print_instruction(aux);
-    aux = aux -> next;
-  }
-  printf("\n\n\n");
 }
 
 /*
@@ -417,7 +299,6 @@ void generate_functions_intermediate_code(FunctionNode * head) {
   while (aux != NULL) {
     InstructionNode * begin_ins = NULL;
     max_offset_current_function = aux -> max_offset;
-    printf("FUNCION: %s   max_offset without temporals: %d\n", aux -> id, aux -> max_offset);
     if (!aux -> is_extern) {
       begin_ins = create_instructionNode(BEGIN_FUN, create_label_with_id(aux -> id), NULL, NULL);
       add_instruction(begin_ins);
@@ -426,7 +307,6 @@ void generate_functions_intermediate_code(FunctionNode * head) {
       aux -> max_offset = max_offset_current_function;
       begin_ins -> result -> offset = max_offset_current_function;
     }
-    printf("FUNCION: %s   Final max_offset: %d \n\n", aux -> id, aux -> max_offset);
     aux = aux -> next;
   }
 }

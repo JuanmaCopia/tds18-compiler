@@ -19,7 +19,7 @@ VarNode * create_VarNode(char * id, int value, bool is_boolean) {
 */
 char * create_string_offset(int offset) {
 	char offset_string[64];
-	sprintf(offset_string, "%d(%rbp)\0", offset);
+	sprintf(offset_string, "%d(%crbp)", offset, '%');
 	char * res = malloc(strlen(offset_string));
 	sprintf(res, "%s", offset_string);
 	return res;
@@ -30,7 +30,7 @@ char * create_string_offset(int offset) {
 */
 char * create_global_string_offset(char * var_id) {
 	char offset_string[64];
-	sprintf(offset_string, "%s(%s)\0", var_id, "%rip");
+	sprintf(offset_string, "%s(%s)", var_id, "%rip");
 	char * res = malloc(strlen(offset_string));
 	sprintf(res, "%s", offset_string);
 	return res;
@@ -43,7 +43,6 @@ VarNode * create_varnode_from_param(Parameter * param) {
 	new_varnode -> is_defined = false;
 	new_varnode -> offset = param -> offset;
 	new_varnode -> string_offset = create_string_offset(param -> offset);
-	printf("string offset de parametro generado: %s\n", new_varnode -> string_offset);
 	new_varnode -> kind = _parameter;
 	return new_varnode;
 }
@@ -80,6 +79,96 @@ InstructionNode * create_instructionNode(int operation, VarNode * result, VarNod
 	new_node -> next= NULL;
 	new_node -> back= NULL;
 	return new_node;
+}
+
+/*
+	Frees the memory of a VarNode and its related nodes.
+*/
+void free_varnode_memory(VarNode * v) {
+	if (v != NULL) {
+		VarNode * next = v -> next;
+		free(v -> string_offset);
+		free(v);
+		v = NULL;
+		free_varnode_memory(next);
+	}
+}
+
+/*
+	Frees the memory of a Parameter node and its related nodes.
+*/
+void free_parameter_memory(Parameter * p) {
+	if (p != NULL) {
+		Parameter * next = p -> next;
+		free(p);
+		p = NULL;
+		free_parameter_memory(next);
+	}
+}
+
+/*
+	Frees the memory of an ASTNode and its related nodes.
+*/
+void free_astnode_memory(ASTNode * ast) {
+	if (ast != NULL) {
+		ASTNode * next_statement = ast -> next_statement;
+		ASTNode * left_child = ast -> left_child;
+		ASTNode * right_child = ast -> right_child;
+		free(ast);
+		ast = NULL;
+		free_astnode_memory(left_child);
+		free_astnode_memory(right_child);
+		free_astnode_memory(next_statement);
+	}
+}
+
+/*
+	Frees the memory of a Function Node and its related nodes.
+*/
+void free_function_memory(FunctionNode * f) {
+	if (f != NULL) {
+		FunctionNode * next = f -> next;
+		free_parameter_memory(f -> parameters);
+		free_varnode_memory(f -> enviroment);
+		free_astnode_memory(f -> body);
+		free(f);
+		f = NULL;
+		free_function_memory(next);
+	}
+}
+
+/*
+	Frees the memory of a VarNode and its related nodes.
+*/
+void free_instruction_memory(InstructionNode * i) {
+	if (i != NULL) {
+		if (i -> operation == CALL)
+		{
+			free(i -> op1);
+			free(i -> result);
+		}
+		if (i -> operation == CMP) 
+		{
+			free(i -> op1);
+			free(i -> op2);
+			free(i -> result);
+		}
+		if (i -> operation == LESSER_THAN ||
+			i -> operation == GREATER_THAN) {
+			free(i -> op1);
+			free(i -> op2);	
+		}
+		if (i -> operation == JMP ||
+			i -> operation == JE ||
+			i -> operation == JNE) 
+		{
+			free(i -> result);	
+		}
+		InstructionNode * next = i -> next;
+		free(i);
+		i = NULL;
+		free_instruction_memory(next);
+	}
 }
 
 /*
@@ -150,7 +239,7 @@ char * get_operation_string(InstructionNode * i) {
 */
 VarNode * create_label() {
 	char label_name[128];
-	sprintf(label_name, "label%d\0", label_quantity);
+	sprintf(label_name, "label%d", label_quantity);
 	char * res = malloc(strlen(label_name));
 	sprintf(res, "%s", label_name);
 	VarNode * new_node = create_var_node();
@@ -321,5 +410,104 @@ char * get_string_representation(ASTNode * node) {
 		}
 		}
 		break;
+	}
+}
+
+/*
+  Prints a single instruction on cosole.
+*/
+void print_instruction(InstructionNode * i) {
+	char op1_string[12];
+	char op2_string[12];
+	char result_string[12];
+	strcpy(op1_string, get_temporal_string(i -> op1));
+	strcpy(op2_string, get_temporal_string(i -> op2));
+	strcpy(result_string, get_temporal_string(i -> result));
+	switch (i -> operation) {
+		case BEGIN_FUN:
+			printf("\n\n========================  START OF INSTRUCTIONS OF A NEW FUNCTION  ======================\n\n");
+			printf("\t%s   %s", get_operation_string(i), result_string);
+			//print_varnode(i -> result);
+			printf("                          %s  %s   max_offset: %d\n", i -> result -> id, get_varnode_kind_string(i -> result), i -> result -> offset);
+			printf("\n\n");
+			break;
+		case END_FUN:
+      		printf("\t%s   %s\n", get_operation_string(i), result_string);
+      		print_varnode(i -> result);
+      		break;
+		case LABEL:
+      		printf("%s\n", result_string);
+      		//print_varnode(i -> result);
+      		break;
+		case RETURN:
+      		printf("\t%s   %s\n", get_operation_string(i), result_string);
+      		print_varnode(i -> result);
+      		break;
+		case PUSH: case PUSH1: case PUSH2: case PUSH3: case PUSH4: case PUSH5: case PUSH6:
+      		printf("\t%s   %s\n", get_operation_string(i), result_string);
+      		print_varnode(i -> result);
+      		break;
+		case ASSIGN: case NEGAT: case CALL: 
+      		printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
+      		print_varnode(i -> result);
+      		print_varnode(i -> op1);
+      		break;
+		case PLUS: case MINUS: case PROD: case DIV: case MOD: case EQUALS: case OR: case AND: case GREATER_THAN: case LESSER_THAN: case CMP:
+      		printf("\t%s   %s  %s  %s \n", get_operation_string(i), result_string, op1_string, op2_string);
+      		print_varnode(i -> result);
+      		print_varnode(i -> op1);
+      		print_varnode(i -> op2);
+      		break;
+		case JMP: 
+      		printf("\t%s   %s\n", get_operation_string(i), result_string);
+      		//print_varnode(i -> result);
+      		break;
+		case JE:
+      		printf("\t%s   %s  %s\n", get_operation_string(i), result_string, op1_string);
+      		//print_varnode(i -> result);
+      		print_varnode(i -> op1);
+      		break;
+		case POP: case BREAK:
+      		printf("\t%s\n\n", get_operation_string(i));
+      		break;
+		default:
+			printf("\tUNKNOWN INSTRUCTION\n");
+			break;
+  	}
+}
+
+/*
+  Prints all the instructions on console.
+*/
+void print_instructions(InstructionNode * head) {
+  InstructionNode * aux = head;
+  printf("\n\n");
+  while (aux != NULL) {
+    print_instruction(aux);
+    aux = aux -> next;
+  }
+  printf("\n\n\n");
+}
+
+/*
+  Prints VarNode information.
+*/
+void print_varnode(VarNode * var) {
+	switch (var -> kind) {
+		case _local: case _parameter:
+			printf("                                              %s  %s  offset: %d\n", var -> id, get_varnode_kind_string(var), var -> offset);
+			break;
+		case _temporal:
+			printf("                                              %s  %s  offset: %d    value: %s\n", var -> id, get_varnode_kind_string(var), var -> offset, get_temporal_string(var));
+			break;
+		case _label:
+			printf("                          %s  %s\n", var -> id, get_varnode_kind_string(var));
+			break;
+		case _global:
+			printf("                                              %s  %s  offset: %s\n", var -> id, get_varnode_kind_string(var), var -> string_offset);
+			break;
+		default:
+			printf(" ERROR, unknown varnode type \n");
+			break;
 	}
 }

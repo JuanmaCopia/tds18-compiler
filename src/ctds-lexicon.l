@@ -3,8 +3,7 @@
 #include "structs.c"
 #include "ctds-syntax.tab.h"
 
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+void yyerror(const char *str);
 
 void setyylloc() {
 	yylloc.first_line = yylineno;
@@ -186,8 +185,7 @@ extern {
 {START}({SIMPLE}|{COMPLEX})*{END}
 
 . { 
-	printf(ANSI_COLOR_RED "error!\n" ANSI_COLOR_RESET, yylineno);
-	printf("\t" ANSI_COLOR_RED "'%s'" ANSI_COLOR_RESET " is not a valid / recognized input\n", yytext);
+	printf("ERROR: Invalid symbol found\n");
 	yyterminate();
 }
 
