@@ -19,4 +19,3 @@ HOW TO RUN TESTS:
     
     FINAL TESTS:
         ./run_final_tests.sh
-    
