@@ -5,6 +5,8 @@ if [ $# -eq 0 ]
     if [ -e ./build/parser.out ]
      then
         ./build/parser.out $1
+      else
+        echo "Parser not found, first run ./make.sh to build the parser"
     fi
     if [ -e assembly.s ] 
       then
